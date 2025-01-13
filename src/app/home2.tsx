@@ -118,7 +118,7 @@ const LandingPage = () => {
 
   return (
     <div className='min-h-screen bg-goldyellow-400 font-m_reg pt-10'>
-      <nav className='bg-white w-[calc(100%-68px)] max-w-[1320px]  sticky top-4 shadow-lg rounded-full mx-auto px-6 py-3 flex items-center justify-between z-50'>
+      <nav className='bg-white w-[calc(100%-68px)] max-w-[1320px] sticky top-4 shadow-lg rounded-full mx-auto px-6 py-3 flex items-center justify-between z-50'>
         <h1 className='text-xl font-m_bold'>Monalouisa Teaches</h1>
 
         <div className='hidden md:flex items-center gap-4'>
@@ -127,7 +127,7 @@ const LandingPage = () => {
           <span>Teachers</span>
           <span>Cost</span>
         </div>
-        <div className='flex  gap-4'>
+        <div className='flex gap-4'>
           <Button variant='outline'>Try Free Class</Button>
           <Button className='hidden'>Sign In</Button>
           <Button
@@ -144,11 +144,12 @@ const LandingPage = () => {
           </Button>
         </div>
       </nav>
+
       {/* Mobile Navigation */}
       <div
-        className={`md:hidden absolute w-full pt-32 px-14 top-0 ${
-          isMobileMenuOpen ? 'block bg-white' : 'hidden'
-        }`}
+        className={`md:hidden fixed top-0 left-0 w-full pt-24 px-14 transition-transform duration-300 ease-in-out ${
+          isMobileMenuOpen ? 'translate-y-0' : '-translate-y-full'
+        } bg-white shadow-lg z-30`}
       >
         <div className='container flex flex-col space-y-4 py-4'>
           <Link
@@ -163,7 +164,6 @@ const LandingPage = () => {
           >
             Classes
           </Link>
-
           <Link
             href='/#'
             className='text-gray-600 hover:text-indigo-600 transition-colors'
@@ -176,18 +176,7 @@ const LandingPage = () => {
           >
             Teachers
           </Link>
-          <Link
-            href='/#'
-            className='text-gray-600 hover:text-indigo-600 transition-colors'
-          >
-            Teachers
-          </Link>
           <div className='flex flex-col space-y-2 pt-2 border-t'>
-            {/* <Link href='/signin' className='w-full'>
-              <Button variant='ghost' className='w-full text-indigo-600'>
-                Sign In
-              </Button>
-            </Link> */}
             <Link href='/signup' className='w-full'>
               <Button className='w-full bg-goldyellow-600 hover:bg-goldyellow-600/80'>
                 Sign In
