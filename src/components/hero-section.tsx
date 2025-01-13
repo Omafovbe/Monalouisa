@@ -16,7 +16,7 @@ export function HeroSection() {
           <p className='text-gray-600  text-lg relative z-10'>
             There are many variations of passages of Lorem Ipsum available, but
             the majority have suffered alteration in some form, by injected
-            humour, or randomised words which don't look even slightly
+            humour, or randomised words which don&#39;t look even slightly
             believable.
           </p>
           <div className='flex flex-wrap justify-center md:justify-start gap-4 relative z-10'>

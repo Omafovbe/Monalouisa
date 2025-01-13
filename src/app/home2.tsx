@@ -144,7 +144,7 @@ const LandingPage = () => {
 
             <div className='bg-white max-w-[460px] px-6 py-8 rounded-2xl'>
               <h3 className='text-xl text-[#262626] font-semibold mb-4 text-center'>
-                Child's age
+                Child&#39;s age
               </h3>
               <div className='flex flex-wrap gap-4 justify-center'>
                 {ageOptions.map((age) => (
@@ -168,9 +168,11 @@ const LandingPage = () => {
 
           <div className='relative'>
             <div className='p-4 rounded-2xl shadow-lg transform rotate-3'>
-              <img
+              <Image
                 src='/boy_smiles.png'
                 alt='Learning illustration'
+                width={500}
+                height={250}
                 className='rounded-xl'
               />
               <div className='absolute -top-4 -right-4'>
@@ -266,7 +268,7 @@ const LandingPage = () => {
 
               <div className='relative'>
                 <div className='rounded-2xl overflow-hidden bg-gray-100'>
-                  <img
+                  <Image
                     src='/api/placeholder/600/400'
                     alt='Teacher introduction'
                     className='w-full h-full object-cover'

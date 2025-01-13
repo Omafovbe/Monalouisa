@@ -60,7 +60,7 @@ const Footer = () => {
               Terms and Conditions
             </a>
             <a href='#' className='hover:text-white'>
-              Children's Privacy Policy
+              Children&#39;s Privacy Policy
             </a>
             <a href='#' className='hover:text-white'>
               Cookie Policy

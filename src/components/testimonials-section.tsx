@@ -48,7 +48,7 @@ export function TestimonialsSection() {
                   <p className='text-gray-600 text-sm'>{testimonial.role}</p>
                 </div>
               </div>
-              <p className='text-gray-600'>"{testimonial.quote}"</p>
+              <p className='text-gray-600'>&#34;{testimonial.quote}&#34;</p>
             </div>
           ))}
         </div>

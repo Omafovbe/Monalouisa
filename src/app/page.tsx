@@ -1,24 +1,24 @@
 'use client'
 import { useState } from 'react'
-import Link from 'next/link'
-import { Button } from '@/components/ui/button'
-import {
-  GraduationCap,
-  Menu,
-  Play,
-  Facebook,
-  Twitter,
-  Linkedin,
-  Instagram,
-} from 'lucide-react'
-import { HeroSection } from '@/components/hero-section'
-import { InstructorsSection } from '@/components/instructors-section'
-import { TestimonialsSection } from '@/components/testimonials-section'
+// import Link from 'next/link'
+// import { Button } from '@/components/ui/button'
+// import {
+//   GraduationCap,
+//   Menu,
+//   Play,
+//   Facebook,
+//   Twitter,
+//   Linkedin,
+//   Instagram,
+// } from 'lucide-react'
+// import { HeroSection } from '@/components/hero-section'
+// import { InstructorsSection } from '@/components/instructors-section'
+// import { TestimonialsSection } from '@/components/testimonials-section'
 import Footer from '@/components/footer2'
 import LandingPage from './home2'
 
 export default function Home() {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  // const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   return (
     // <main className='min-h-screen bg-gradient-to-br from-[#F8F9FF] to-[#F5F2FF]'>
