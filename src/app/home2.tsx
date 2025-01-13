@@ -147,7 +147,7 @@ const LandingPage = () => {
 
       {/* Mobile Navigation */}
       <div
-        className={`md:hidden fixed top-0 left-0 w-full pt-24 px-14 transition-transform duration-300 ease-in-out ${
+        className={`md:hidden  fixed top-0 left-0 w-full h-screen py-24 px-14 transition-transform duration-300 ease-in-out flex flex-col justify-between ${
           isMobileMenuOpen ? 'translate-y-0' : '-translate-y-full'
         } bg-white shadow-lg z-30`}
       >
@@ -176,13 +176,13 @@ const LandingPage = () => {
           >
             Teachers
           </Link>
-          <div className='flex flex-col space-y-2 pt-2 border-t'>
-            <Link href='/signup' className='w-full'>
-              <Button className='w-full bg-goldyellow-600 hover:bg-goldyellow-600/80'>
-                Sign In
-              </Button>
-            </Link>
-          </div>
+        </div>
+        <div className='flex flex-col space-y-2 pt-2 border-t'>
+          <Link href='/signup' className='w-full'>
+            <Button className='w-full bg-goldyellow-600 hover:bg-goldyellow-600/80'>
+              Sign In
+            </Button>
+          </Link>
         </div>
       </div>
 
