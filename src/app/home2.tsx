@@ -1,8 +1,14 @@
+'use client'
+import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import Image from 'next/image'
-import { BookOpen, Users, Calendar, Award, Play } from 'lucide-react'
+import Link from 'next/link'
+import underline from '../../public/underline.svg'
+import { BookOpen, Users, Calendar, Award, Play, Menu, X } from 'lucide-react'
 
 const LandingPage = () => {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+
   const ageOptions = Array.from({ length: 9 }, (_, i) => i + 4)
 
   const steps = [
@@ -115,17 +121,81 @@ const LandingPage = () => {
       <nav className='bg-white w-[calc(100%-68px)] max-w-[1320px]  sticky top-4 shadow-lg rounded-full mx-auto px-6 py-3 flex items-center justify-between z-50'>
         <h1 className='text-xl font-m_bold'>Monalouisa Teaches</h1>
 
-        <div className='flex items-center gap-4'>
+        <div className='hidden md:flex items-center gap-4'>
           <span>Classes</span>
           <span>Programs</span>
           <span>Teachers</span>
-          <span>Pricing</span>
+          <span>Cost</span>
         </div>
         <div className='flex  gap-4'>
           <Button variant='outline'>Try Free Class</Button>
-          <Button>Sign In</Button>
+          <Button className='hidden'>Sign In</Button>
+          <Button
+            variant='ghost'
+            size='icon'
+            className='md:hidden'
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          >
+            {isMobileMenuOpen ? (
+              <X className='h-6 w-6' />
+            ) : (
+              <Menu className='h-6 w-6' />
+            )}
+          </Button>
         </div>
       </nav>
+      {/* Mobile Navigation */}
+      <div
+        className={`md:hidden absolute w-full pt-32 px-14 top-0 ${
+          isMobileMenuOpen ? 'block bg-white' : 'hidden'
+        }`}
+      >
+        <div className='container flex flex-col space-y-4 py-4'>
+          <Link
+            href='/'
+            className='text-gray-600 hover:text-indigo-600 transition-colors'
+          >
+            Home
+          </Link>
+          <Link
+            href='/#'
+            className='text-gray-600 hover:text-indigo-600 transition-colors'
+          >
+            Classes
+          </Link>
+
+          <Link
+            href='/#'
+            className='text-gray-600 hover:text-indigo-600 transition-colors'
+          >
+            Programs
+          </Link>
+          <Link
+            href='/#'
+            className='text-gray-600 hover:text-indigo-600 transition-colors'
+          >
+            Teachers
+          </Link>
+          <Link
+            href='/#'
+            className='text-gray-600 hover:text-indigo-600 transition-colors'
+          >
+            Teachers
+          </Link>
+          <div className='flex flex-col space-y-2 pt-2 border-t'>
+            {/* <Link href='/signin' className='w-full'>
+              <Button variant='ghost' className='w-full text-indigo-600'>
+                Sign In
+              </Button>
+            </Link> */}
+            <Link href='/signup' className='w-full'>
+              <Button className='w-full bg-goldyellow-600 hover:bg-goldyellow-600/80'>
+                Sign In
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </div>
 
       <main>
         {/* Hero Section */}
@@ -242,11 +312,9 @@ const LandingPage = () => {
               {/* Underline SVG */}
               <div className='flex justify-center'>
                 <Image
-                  className='w-full max-w-[300px]'
+                  className='w-full h-3 max-w-[250px]  fill-goldyellow-700'
                   alt='underline'
-                  width={100}
-                  height={5}
-                  src='/underline.svg'
+                  src={underline}
                 />
               </div>
             </h2>
@@ -271,6 +339,8 @@ const LandingPage = () => {
                   <Image
                     src='/api/placeholder/600/400'
                     alt='Teacher introduction'
+                    width={600}
+                    height={400}
                     className='w-full h-full object-cover'
                   />
                   <div className='absolute inset-0 bg-black/40 flex items-center justify-center'>
