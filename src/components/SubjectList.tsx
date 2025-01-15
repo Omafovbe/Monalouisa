@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { BookOpen, Globe2, Icon, Languages } from 'lucide-react'
+import { BookOpen, Globe2, Languages } from 'lucide-react'
 import Image from 'next/image'
 
 const subjects = [

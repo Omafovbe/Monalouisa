@@ -297,7 +297,7 @@ const LandingPage = () => {
               className='text-[#967117] text-[1.2rem] mb-8'
               variants={itemVariants}
             >
-              Take our assessment quiz to help us understand your child's
+              Take our assessment quiz to help us understand your child#apos;s
               current level and learning goals
             </motion.p>
 
