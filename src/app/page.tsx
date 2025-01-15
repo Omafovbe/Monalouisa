@@ -16,6 +16,8 @@
 // import { TestimonialsSection } from '@/components/testimonials-section'
 import Footer from '@/components/footer2'
 import LandingPage from './home2'
+import SubjectList from '@/components/SubjectList'
+import { DecorativeSection } from '@/components/DecorativeSection'
 
 export default function Home() {
   // const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
@@ -135,6 +137,8 @@ export default function Home() {
     // </main>
     <>
       <LandingPage />
+      <DecorativeSection />
+      <SubjectList />
       <Footer />
     </>
   )

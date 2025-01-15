@@ -1,10 +1,20 @@
 'use client'
 import { useState } from 'react'
+import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import Image from 'next/image'
 import Link from 'next/link'
 import underline from '../../public/underline.svg'
-import { BookOpen, Users, Calendar, Award, Play, Menu, X } from 'lucide-react'
+import {
+  BookOpen,
+  Users,
+  Calendar,
+  Award,
+  Play,
+  Menu,
+  X,
+  Lightbulb,
+} from 'lucide-react'
 
 const LandingPage = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
@@ -116,6 +126,55 @@ const LandingPage = () => {
     },
   ]
 
+  // Split text into two parts for different styling
+  const lightWords = 'Discover the perfect'.split(' ')
+  const darkWords = 'learning path'.split(' ')
+
+  // Variants for the hero section elements
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.3,
+      },
+    },
+  }
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.5,
+      },
+    },
+  }
+
+  // Word reveal variants
+  const textVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+      },
+    },
+  }
+
+  const wordVariants = {
+    hidden: { opacity: 0, y: 50 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.4,
+        ease: 'easeOut',
+      },
+    },
+  }
+
   return (
     <div className='min-h-screen bg-goldyellow-400 font-m_reg pt-10'>
       <nav className='bg-white w-[calc(100%-68px)] max-w-[1320px] sticky top-4 shadow-lg rounded-full mx-auto px-6 py-3 flex items-center justify-between z-50'>
@@ -147,7 +206,7 @@ const LandingPage = () => {
 
       {/* Mobile Navigation */}
       <div
-        className={`md:hidden  fixed top-0 left-0 w-full h-screen py-24 px-14 transition-transform duration-300 ease-in-out flex flex-col justify-between ${
+        className={`md:hidden fixed top-0 left-0 w-full h-screen py-24 px-14 transition-transform duration-300 ease-in-out flex flex-col justify-between ${
           isMobileMenuOpen ? 'translate-y-0' : '-translate-y-full'
         } bg-white shadow-lg z-30`}
       >
@@ -188,20 +247,64 @@ const LandingPage = () => {
 
       <main>
         {/* Hero Section */}
-        <div className='w-[calc(100%-68px)] max-w-[1320px] mx-auto pl-8 pr-4 py-12 flex flex-col md:flex-row items-center justify-between'>
-          <div className='max-w-xl font-m_bold flex flex-col items-center md:items-start'>
-            <span className='text-[#967117]'>ONLINE LEARNING PLATFORM</span>
-            <h1 className='text-6xl font-bold text-center md:text-left text-white mt-4 mb-6'>
-              Discover the perfect
-              <span className='text-[#890620] block'>learning path</span>
-              for your child
-            </h1>
-            <p className='text-[#967117] text-[1.2rem]  mb-8'>
-              Take our assessment quiz to receive a personalized learning
-              recommendation
-            </p>
+        <motion.div
+          className='w-[calc(100%-68px)] max-w-[1320px] mx-auto pl-8 pr-4 py-12 flex flex-col md:flex-row items-center justify-between'
+          variants={containerVariants}
+          initial='hidden'
+          animate='visible'
+        >
+          <motion.div
+            className='max-w-xl font-m_bold flex flex-col items-center md:items-start'
+            variants={itemVariants}
+          >
+            <motion.span className='text-[#967117]' variants={itemVariants}>
+              ONLINE LEARNING PLATFORM
+            </motion.span>
 
-            <div className='bg-white max-w-[460px] px-6 py-8 rounded-2xl'>
+            <motion.h1
+              className='text-6xl font-bold text-center md:text-left mt-4 mb-6'
+              variants={textVariants}
+            >
+              {/* Light colored words */}
+              {lightWords.map((word, index) => (
+                <motion.span
+                  key={index}
+                  variants={wordVariants}
+                  className='inline-block mr-[0.5rem] text-white'
+                >
+                  {word}
+                </motion.span>
+              ))}
+              {/* Dark colored words */}
+              {darkWords.map((word, index) => (
+                <motion.span
+                  key={`dark-${index}`}
+                  variants={wordVariants}
+                  className='inline-block mr-[0.5rem] text-[#890620]'
+                >
+                  {word}
+                </motion.span>
+              ))}
+              <motion.span
+                className='text-white block mt-2'
+                variants={itemVariants}
+              >
+                for your child
+              </motion.span>
+            </motion.h1>
+
+            <motion.p
+              className='text-[#967117] text-[1.2rem] mb-8'
+              variants={itemVariants}
+            >
+              Take our assessment quiz to help us understand your child's
+              current level and learning goals
+            </motion.p>
+
+            <motion.div
+              className='bg-white max-w-[460px] px-6 py-8 rounded-2xl'
+              variants={itemVariants}
+            >
               <h3 className='text-xl text-[#262626] font-semibold mb-4 text-center'>
                 Child&#39;s age
               </h3>
@@ -209,54 +312,96 @@ const LandingPage = () => {
                 {ageOptions.map((age) => (
                   <button
                     key={age}
-                    className='w-14 h-14 rounded-full border-2 border-goldyellow-300 hover:border-goldyellow-600 
-                             flex items-center transition-colors hover:bg-goldyellow-600 hover:text-white duration-500 delay-100 ease-in-out justify-center font-medium'
+                    className='w-14 h-14 rounded-full border-2 border-goldyellow-300 
+                              flex items-center justify-center font-medium relative 
+                              overflow-hidden group transition-colors duration-400'
                   >
-                    {age}
+                    <span className='relative z-10 transition-colors duration-400 group-hover:text-white'>
+                      {age}
+                    </span>
+                    <div
+                      className='absolute bottom-0 left-0 w-full bg-goldyellow-600 
+                                  transition-all duration-300 ease-out
+                                  h-0 group-hover:h-full'
+                    />
                   </button>
                 ))}
                 <button
-                  className='w-14 h-14 rounded-full border-2 border-goldyellow-300 hover:border-goldyellow-600 
-                                flex items-center justify-center font-medium transition-colors'
+                  className='w-14 h-14 rounded-full border-2 border-goldyellow-300 
+                            flex items-center justify-center font-medium relative 
+                            overflow-hidden group transition-colors duration-300'
                 >
-                  13+
+                  <span className='relative z-10 transition-colors duration-300 group-hover:text-white'>
+                    13+
+                  </span>
+                  <div
+                    className='absolute bottom-0 left-0 w-full bg-goldyellow-600 
+                                transition-all duration-300 ease-out
+                                h-0 group-hover:h-full'
+                  />
                 </button>
               </div>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
 
-          <div className='relative'>
-            <div className='p-4 rounded-2xl shadow-lg transform rotate-3'>
+          <motion.div className='relative py-14'>
+            <motion.div
+              className='p-4 transform rotate-3'
+              whileHover={{ scale: 1.05 }}
+              transition={{ type: 'spring', stiffness: 300 }}
+            >
               <Image
-                src='/boy_smiles.png'
+                src='/young-student.png'
                 alt='Learning illustration'
                 width={500}
                 height={250}
-                className='rounded-xl'
+                className='rounded-xl scale-x-[-1]'
               />
-              <div className='absolute -top-4 -right-4'>
-                <div className='bg-goldyellow-100 p-2 rounded-lg'>
-                  <svg
-                    className='w-6 h-6 text-goldyellow-500'
-                    fill='none'
-                    viewBox='0 0 24 24'
-                    stroke='currentColor'
+              <motion.div
+                className='absolute top-12 right-16'
+                animate={{
+                  scale: [1, 1.2, 1],
+                  opacity: [0.7, 1, 0.7],
+                }}
+                transition={{
+                  duration: 3,
+                  repeat: Infinity,
+                  ease: 'easeInOut',
+                }}
+              >
+                <div className='shadow-md rounded-full p-3'>
+                  <motion.div
+                    animate={{
+                      opacity: [0.5, 1, 0.5],
+                    }}
+                    transition={{
+                      duration: 3,
+                      repeat: Infinity,
+                      ease: 'easeInOut',
+                    }}
                   >
-                    <path
-                      strokeLinecap='round'
-                      strokeLinejoin='round'
-                      strokeWidth={2}
-                      d='M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9'
-                    />
-                  </svg>
+                    <Lightbulb className='w-8 h-8 text-goldyellow-600' />
+                  </motion.div>
+                  <motion.div
+                    className='absolute inset-0 bg-goldyellow-400/30 rounded-full blur-md'
+                    animate={{
+                      scale: [0.8, 1.2, 0.8],
+                      opacity: [0.3, 0.7, 0.3],
+                    }}
+                    transition={{
+                      duration: 2,
+                      repeat: Infinity,
+                      ease: 'easeInOut',
+                    }}
+                  />
                 </div>
-              </div>
-            </div>
-          </div>
-        </div>
+              </motion.div>
+            </motion.div>
+          </motion.div>
+        </motion.div>
 
         {/* Process Steps Section */}
-        <div className='bg-white py-16'>
+        <div className='bg-amber-50 py-24'>
           <div className='container mx-auto px-4'>
             <div className='text-center mb-12'>
               <h2 className='text-3xl font-bold mb-4'>Getting Started</h2>
