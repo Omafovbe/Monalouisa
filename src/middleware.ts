@@ -6,6 +6,12 @@ export default withAuth(
     const token = req.nextauth.token
     const path = req.nextUrl.pathname
 
+    // Public routes that don't require authentication
+    const publicRoutes = ['/', '/about']
+    if (publicRoutes.includes(path)) {
+      return NextResponse.next()
+    }
+
     // Allow access to auth-related pages
     if (path.startsWith('/login') || path.startsWith('/register')) {
       return NextResponse.next()
@@ -47,6 +53,6 @@ export const config = {
      * - api routes (/api/*)
      * - static files (/_next/*, /favicon.ico, etc.)
      */
-    '/((?!api|_next|login|register|favicon.ico).*)',
+    '/((?!api|_next|login|register|favicon.ico|about$|^$).*)',
   ],
 }
