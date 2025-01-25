@@ -2,7 +2,7 @@
 import { CalltoAction } from '@/components/CallToAction'
 import Navbar from '@/components/Navbar'
 import { motion } from 'framer-motion'
-import Image from 'next/image'
+// import Image from 'next/image'
 
 export default function AboutPage() {
   return (

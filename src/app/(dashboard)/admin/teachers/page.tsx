@@ -1,4 +1,3 @@
-// src/app/admin/manage-teachers/page.tsx
 const ManageTeachers = () => {
   return (
     <div>

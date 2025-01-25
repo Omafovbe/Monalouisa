@@ -1,4 +1,4 @@
-import { MoveRight, PhoneCall } from 'lucide-react'
+import { MoveRight } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { motion } from 'framer-motion'

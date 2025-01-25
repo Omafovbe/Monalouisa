@@ -1,20 +1,8 @@
 'use client'
-import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Button } from '@/components/ui/button'
 import Image from 'next/image'
-import Link from 'next/link'
 import underline from '../../public/underline.svg'
-import {
-  BookOpen,
-  Users,
-  Calendar,
-  Award,
-  Play,
-  Menu,
-  X,
-  Lightbulb,
-} from 'lucide-react'
+import { BookOpen, Users, Calendar, Award, Play, Lightbulb } from 'lucide-react'
 import { SignOutButton } from '@/components/auth/SignOutBtn'
 // import CostSection from '@/components/CostSection'
 import PricingTable from '@/components/PricingTable'

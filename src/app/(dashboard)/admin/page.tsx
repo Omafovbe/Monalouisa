@@ -16,14 +16,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
-import {
-  Calendar,
-  LineChart,
-  MoreVertical,
-  TrendingUp,
-  Search,
-  Plus,
-} from 'lucide-react'
+import { Calendar, MoreVertical, TrendingUp, Plus } from 'lucide-react'
 import {
   Table,
   TableBody,
@@ -99,7 +92,7 @@ export default function Page() {
             <Card>
               <CardHeader className='flex flex-row items-center justify-between'>
                 <CardTitle className='text-sm font-medium'>
-                  Today's Classes
+                  Today&#39;s Classes
                 </CardTitle>
                 <Calendar className='h-4 w-4 text-muted-foreground' />
               </CardHeader>

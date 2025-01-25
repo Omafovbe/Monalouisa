@@ -16,9 +16,9 @@ import {
   X,
 } from 'lucide-react'
 
-interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {}
+// interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {}
 
-export function Sidebar({ className }: SidebarProps) {
+export function Sidebar({ className }: React.HTMLAttributes<HTMLDivElement>) {
   const [isMobileOpen, setIsMobileOpen] = useState(false)
 
   return (

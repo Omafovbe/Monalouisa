@@ -2,7 +2,6 @@
 
 import db from '@/lib/db'
 import { hash } from 'bcryptjs'
-import { NextResponse } from 'next/server'
 
 // Add this function to hash passwords
 async function hashPassword(password: string): Promise<string> {

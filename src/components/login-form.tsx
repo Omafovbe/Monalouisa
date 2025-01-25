@@ -42,6 +42,7 @@ export function LoginForm() {
         })
 
         if (!result) {
+          console.log(state)
           return {
             status: 'executing',
             error: 'Please wait...',
@@ -60,6 +61,7 @@ export function LoginForm() {
           error: null,
         }
       } catch (error) {
+        console.log(error)
         return {
           status: 'error',
           error: 'An unexpected error occurred',
