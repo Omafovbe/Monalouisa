@@ -1,0 +1,146 @@
+// prisma/schema.prisma
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+enum UserRole {
+    STUDENT
+    TEACHER
+    ADMIN
+}
+
+enum ApplicationStatus {
+    PENDING
+    APPROVED
+    REJECTED
+}
+
+model User {
+    id        Int      @id @default(autoincrement())
+    name      String?
+    email     String   @unique
+    password  String
+    role      UserRole @default(STUDENT)
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    // Role-specific profiles
+    teacher Teacher?
+    student Student?
+    admin   Admin?
+}
+
+model Teacher {
+    id                 Int                  @id @default(autoincrement())
+    userId             Int                  @unique
+    user               User                 @relation(fields: [userId], references: [id])
+    bio                String?
+    phone              String?
+    profilePicture     String?
+    hireDate           DateTime?
+    status             String               @default("PENDING") // active, inactive, on_leave
+    subjects           SubjectsOnTeachers[]
+    students           StudentsOnTeachers[]
+    teacherApplication TeacherApplication?
+    createdAt          DateTime             @default(now())
+    updatedAt          DateTime             @updatedAt
+}
+
+model Student {
+    id          Int                  @id @default(autoincrement())
+    userId      Int                  @unique
+    user        User                 @relation(fields: [userId], references: [id])
+    dateOfBirth DateTime?
+    grade       String?
+    parentName  String?
+    parentEmail String?
+    parentPhone String?
+    schedules   Schedule[]
+    teachers    StudentsOnTeachers[]
+    createdAt   DateTime             @default(now())
+    updatedAt   DateTime             @updatedAt
+
+    StudentsOnSubjects StudentsOnSubjects[]
+}
+
+model Admin {
+    id        Int      @id @default(autoincrement())
+    userId    Int      @unique
+    user      User     @relation(fields: [userId], references: [id])
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+model Subject {
+    id          Int                  @id @default(autoincrement())
+    name        String               @unique
+    description String?
+    teachers    SubjectsOnTeachers[]
+    students    StudentsOnSubjects[]
+    createdAt   DateTime             @default(now())
+    updatedAt   DateTime             @updatedAt
+
+    Schedule Schedule[]
+}
+
+model TeacherApplication {
+    id           Int               @id @default(autoincrement())
+    teacherId    Int               @unique
+    teacher      Teacher           @relation(fields: [teacherId], references: [id])
+    status       ApplicationStatus @default(PENDING)
+    documents    String[] // URLs to uploaded documents
+    experience   String?
+    certificates String[]
+    notes        String?
+    reviewedBy   String? // Admin who reviewed the application
+    createdAt    DateTime          @default(now())
+    updatedAt    DateTime          @updatedAt
+}
+
+model Schedule {
+    id        Int      @id @default(autoincrement())
+    studentId Int
+    subjectId Int
+    dateTime  DateTime
+    duration  Int // in minutes
+    student   Student  @relation(fields: [studentId], references: [id])
+    subject   Subject  @relation(fields: [subjectId], references: [id])
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+// Many-to-Many Relations
+model SubjectsOnTeachers {
+    teacherId  Int
+    subjectId  Int
+    teacher    Teacher  @relation(fields: [teacherId], references: [id])
+    subject    Subject  @relation(fields: [subjectId], references: [id])
+    assignedAt DateTime @default(now())
+
+    @@id([teacherId, subjectId])
+}
+
+model StudentsOnTeachers {
+    studentId  Int
+    teacherId  Int
+    student    Student  @relation(fields: [studentId], references: [id])
+    teacher    Teacher  @relation(fields: [teacherId], references: [id])
+    assignedAt DateTime @default(now())
+
+    @@id([studentId, teacherId])
+}
+
+model StudentsOnSubjects {
+    studentId  Int
+    subjectId  Int
+    student    Student  @relation(fields: [studentId], references: [id])
+    subject    Subject  @relation(fields: [subjectId], references: [id])
+    enrolledAt DateTime @default(now())
+
+    @@id([studentId, subjectId])
+}

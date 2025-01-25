@@ -1,7 +1,9 @@
 'use client'
 
-import { useState } from 'react'
-// import { useRouter } from 'next/navigation'
+import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { useActionState } from 'react'
+import { signIn } from 'next-auth/react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import {
@@ -22,9 +24,51 @@ const formSchema = z.object({
   password: z.string().min(6, 'Password must be at least 6 characters'),
 })
 
+type ActionState = {
+  status: 'idle' | 'executing' | 'success' | 'error'
+  error?: string | null
+}
+
 export function LoginForm() {
-  // const router = useRouter()
-  const [isLoading, setIsLoading] = useState(false)
+  const router = useRouter()
+  const [state, action, isPending] = useActionState<ActionState>(
+    async (state: ActionState): Promise<ActionState> => {
+      try {
+        const formData = new FormData(document.querySelector('form')!)
+        const result = await signIn('credentials', {
+          email: formData.get('email'),
+          password: formData.get('password'),
+          redirect: false,
+        })
+
+        if (!result) {
+          return {
+            status: 'executing',
+            error: 'Please wait...',
+          }
+        }
+
+        if (result.error) {
+          return {
+            status: 'error',
+            error: 'Invalid email or password',
+          }
+        }
+
+        return {
+          status: 'success',
+          error: null,
+        }
+      } catch (error) {
+        return {
+          status: 'error',
+          error: 'An unexpected error occurred',
+        }
+      }
+    },
+    { status: 'idle', error: null }
+  )
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -32,20 +76,17 @@ export function LoginForm() {
       password: '',
     },
   })
-  async function onSubmit(values: z.infer<typeof formSchema>) {
-    try {
-      setIsLoading(true)
-      // Add your login logic here
-      console.log(values)
-    } catch (error) {
-      console.error(error)
-    } finally {
-      setIsLoading(false)
+
+  // Redirect after successful login
+  useEffect(() => {
+    if (state.status === 'success') {
+      router.push('/admin')
     }
-  }
+  }, [state.status, router])
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-4'>
+      <form action={action} className='space-y-4'>
         <FormField
           control={form.control}
           name='email'
@@ -59,7 +100,7 @@ export function LoginForm() {
                   autoCapitalize='none'
                   autoComplete='email'
                   autoCorrect='off'
-                  disabled={isLoading}
+                  disabled={isPending}
                   {...field}
                 />
               </FormControl>
@@ -78,7 +119,7 @@ export function LoginForm() {
                   placeholder='Enter your password'
                   type='password'
                   autoComplete='current-password'
-                  disabled={isLoading}
+                  disabled={isPending}
                   {...field}
                 />
               </FormControl>
@@ -86,12 +127,13 @@ export function LoginForm() {
             </FormItem>
           )}
         />
+        {state.error && <p className='text-sm text-red-600'>{state.error}</p>}
         <Button
           type='submit'
           className='w-full bg-[#6366F1] hover:bg-[#5849E5] text-white'
-          disabled={isLoading}
+          disabled={isPending}
         >
-          {isLoading ? 'Signing in...' : 'Sign in'}
+          {isPending ? 'Signing in...' : 'Sign in'}
         </Button>
       </form>
       <div className='mt-4 text-center text-sm'>

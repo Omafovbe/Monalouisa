@@ -1,0 +1,80 @@
+{
+  "packages": [
+    {
+      "packageName": "Beginner Package",
+      "monthlyCost": "350 - 400 dirhams",
+      "numberOfLessons": "10 Lessons",
+      "lessonDuration": "30 minutes",
+      "billingOptions": [
+        {
+          "type": "Standard Billing",
+          "discounts": "20% discount for siblings and first 20 students",
+          "benefits": [
+            "Perfect for beginners (ages 4-8) learning basic language skills"
+          ]
+        },
+        {
+          "type": "Premium Billing",
+          "discounts": "20% discount for siblings and first 20 students",
+          "benefits": [
+            "Focus on foundational skills: Speaking, Listening, Reading, Writing",
+            "Introduction to grammar and vocabulary in a fun, engaging way",
+            "Weekly progress reports to parents",
+            "Access to multimedia resources supporting young learners",
+            "Premium option provides flexible scheduling and priority booking for lessons"
+          ]
+        }
+      ]
+    },
+    {
+      "packageName": "Intermediate Package",
+      "monthlyCost": "400 - 450 dirhams",
+      "numberOfLessons": "10 Lessons",
+      "lessonDuration": "45 minutes",
+      "billingOptions": [
+        {
+          "type": "Standard Billing",
+          "discounts": "20% discount for siblings and first 20 students",
+          "benefits": ["All Beginner Package benefits"]
+        },
+        {
+          "type": "Premium Billing",
+          "discounts": "20% discount for siblings and first 20 students",
+          "benefits": [
+            "Designed for students progressing to intermediate level (ages 9-13)",
+            "Focus on conversational skills, pronunciation, and reading comprehension",
+            "Introduction to cultural lessons to broaden language understanding",
+            "Bi-weekly progress reports and feedback",
+            "Flexible scheduling options available for Premium students"
+          ]
+        }
+      ]
+    },
+    {
+      "packageName": "Advanced Package",
+      "monthlyCost": "450 - 500 dirhams",
+      "numberOfLessons": "10 Lessons",
+      "lessonDuration": "60 minutes",
+      "billingOptions": [
+        {
+          "type": "Standard Billing",
+          "discounts": "20% discount for siblings and first 20 students",
+          "benefits": ["All Intermediate Package benefits"]
+        },
+        {
+          "type": "Premium Billing",
+          "discounts": "20% discount for siblings and first 20 students",
+          "benefits": [
+            "Tailored for advanced learners (ages 14-18)",
+            "In-depth grammar, vocabulary expansion, and mastering idiomatic expressions",
+            "Focus on fluency, critical thinking, and practical language use in real-life contexts",
+            "Priority scheduling for lesson bookings",
+            "Personalized one-on-one sessions for more focused attention",
+            "Regular cultural activities, storytelling, and language immersion experiences",
+            "Access to proficiency tests and certifications to validate language skills"
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -15,10 +15,13 @@ import {
   X,
   Lightbulb,
 } from 'lucide-react'
+import { SignOutButton } from '@/components/auth/SignOutBtn'
+// import CostSection from '@/components/CostSection'
+import PricingTable from '@/components/PricingTable'
+import packagesData from '@/app/data/packages.json'
+import Navbar from '@/components/Navbar'
 
 const LandingPage = () => {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-
   const ageOptions = Array.from({ length: 9 }, (_, i) => i + 4)
 
   const steps = [
@@ -79,52 +82,52 @@ const LandingPage = () => {
     },
   ]
 
-  const pricingPlans = [
-    {
-      duration: '1 month',
-      price: '11.8',
-      features: [
-        'Building confidence',
-        'Fun interactive lessons',
-        'Priority customer support',
-      ],
-      savings: null,
-      bestValue: false,
-    },
-    {
-      duration: '3 months',
-      price: '10.1',
-      features: [
-        'Building confidence',
-        'Fun interactive lessons',
-        'Priority customer support',
-      ],
-      savings: '14%',
-      bestValue: false,
-    },
-    {
-      duration: '6 months',
-      price: '9.2',
-      features: [
-        'Achieving fluency',
-        'Fun interactive lessons',
-        'Priority customer support',
-      ],
-      savings: '22%',
-      bestValue: false,
-    },
-    {
-      duration: '12 months',
-      price: '8.9',
-      features: [
-        'Mastering English',
-        'Fun interactive lessons',
-        'Priority customer support',
-      ],
-      savings: '24%',
-      bestValue: true,
-    },
-  ]
+  // const pricingPlans = [
+  //   {
+  //     duration: '1 month',
+  //     price: 11.8,
+  //     features: [
+  //       'Building confidence',
+  //       'Fun interactive lessons',
+  //       'Priority customer support',
+  //     ],
+  //     savings: null,
+  //     bestValue: false,
+  //   },
+  //   {
+  //     duration: '3 months',
+  //     price: 10.1,
+  //     features: [
+  //       'Building confidence',
+  //       'Fun interactive lessons',
+  //       'Priority customer support',
+  //     ],
+  //     savings: '14%',
+  //     bestValue: false,
+  //   },
+  //   {
+  //     duration: '6 months',
+  //     price: 9.2,
+  //     features: [
+  //       'Achieving fluency',
+  //       'Fun interactive lessons',
+  //       'Priority customer support',
+  //     ],
+  //     savings: '22%',
+  //     bestValue: false,
+  //   },
+  //   {
+  //     duration: '12 months',
+  //     price: 8.9,
+  //     features: [
+  //       'Mastering English',
+  //       'Fun interactive lessons',
+  //       'Priority customer support',
+  //     ],
+  //     savings: '24%',
+  //     bestValue: true,
+  //   },
+  // ]
 
   // Split text into two parts for different styling
   const lightWords = 'Discover the perfect'.split(' ')
@@ -177,74 +180,7 @@ const LandingPage = () => {
 
   return (
     <div className='min-h-screen bg-goldyellow-400 font-m_reg pt-10'>
-      <nav className='bg-white w-[calc(100%-68px)] max-w-[1320px] sticky top-4 shadow-lg rounded-full mx-auto px-6 py-3 flex items-center justify-between z-50'>
-        <h1 className='text-xl font-m_bold'>Monalouisa Teaches</h1>
-
-        <div className='hidden md:flex items-center gap-4'>
-          <span>Classes</span>
-          <span>Programs</span>
-          <span>Teachers</span>
-          <span>Cost</span>
-        </div>
-        <div className='flex gap-4'>
-          <Button variant='outline'>Try Free Class</Button>
-          <Button className='hidden'>Sign In</Button>
-          <Button
-            variant='ghost'
-            size='icon'
-            className='md:hidden'
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          >
-            {isMobileMenuOpen ? (
-              <X className='h-6 w-6' />
-            ) : (
-              <Menu className='h-6 w-6' />
-            )}
-          </Button>
-        </div>
-      </nav>
-
-      {/* Mobile Navigation */}
-      <div
-        className={`md:hidden fixed top-0 left-0 w-full h-screen py-24 px-14 transition-transform duration-300 ease-in-out flex flex-col justify-between ${
-          isMobileMenuOpen ? 'translate-y-0' : '-translate-y-full'
-        } bg-white shadow-lg z-30`}
-      >
-        <div className='container flex flex-col space-y-4 py-4'>
-          <Link
-            href='/'
-            className='text-gray-600 hover:text-indigo-600 transition-colors'
-          >
-            Home
-          </Link>
-          <Link
-            href='/#'
-            className='text-gray-600 hover:text-indigo-600 transition-colors'
-          >
-            Classes
-          </Link>
-          <Link
-            href='/#'
-            className='text-gray-600 hover:text-indigo-600 transition-colors'
-          >
-            Programs
-          </Link>
-          <Link
-            href='/#'
-            className='text-gray-600 hover:text-indigo-600 transition-colors'
-          >
-            Teachers
-          </Link>
-        </div>
-        <div className='flex flex-col space-y-2 pt-2 border-t'>
-          <Link href='/signup' className='w-full'>
-            <Button className='w-full bg-goldyellow-600 hover:bg-goldyellow-600/80'>
-              Sign In
-            </Button>
-          </Link>
-        </div>
-      </div>
-
+      <Navbar />
       <main>
         {/* Hero Section */}
         <motion.div
@@ -404,11 +340,14 @@ const LandingPage = () => {
         <div className='bg-amber-50 py-24'>
           <div className='container mx-auto px-4'>
             <div className='text-center mb-12'>
-              <h2 className='text-3xl font-bold mb-4'>Getting Started</h2>
+              <h2 className='lg:text-5xl text-3xl font-bold mb-4'>
+                Getting Started
+              </h2>
               <p className='text-gray-600 max-w-2xl mx-auto'>
                 Our simple process makes it easy to get your child started on
                 their learning journey
               </p>
+              <SignOutButton />
             </div>
 
             <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8'>
@@ -441,7 +380,7 @@ const LandingPage = () => {
           </div>
 
           <div className='container mx-auto px-4'>
-            <h2 className='text-5xl font-bold mb-12 text-center'>
+            <h2 className='lg:text-5xl text-3xl font-bold mb-12 text-center'>
               How it works
               {/* Underline SVG */}
               <div className='flex justify-center'>
@@ -463,7 +402,7 @@ const LandingPage = () => {
                     <span className='w-8 h-8 flex items-center justify-center text-2xl'>
                       {feature.icon}
                     </span>
-                    <span className='text-indigo-700'>{feature.title}</span>
+                    <span className='text-goldyellow-700'>{feature.title}</span>
                   </div>
                 ))}
               </div>
@@ -495,56 +434,8 @@ const LandingPage = () => {
         </div>
 
         {/* Cost Section */}
-        <div className='bg-[#F7F5FF] p-14 text-center'>
-          <h1 className='font-bold text-5xl font-m_bold mb-4'>Cost</h1>
-          <div className='w-[calc(100%-68px)]  max-w-[1320px] mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 '>
-            {pricingPlans.map((plan, index) => (
-              <div
-                key={index}
-                className={`relative bg-white rounded-xl pt-6 mt-8 flex flex-col justify-center items-center hover:border-goldyellow-300 hover:border-2 hover:shadow-lg ${
-                  plan.bestValue ? 'border-2 border-goldyellow-300' : ''
-                }`}
-              >
-                {plan.bestValue && (
-                  <span className='absolute -top-4 left-1/2 transform -translate-x-1/2 bg-goldyellow-50 text-goldyellow-700 border border-goldyellow-300 text-md font-semibold px-3 py-1 rounded-lg'>
-                    Best Value
-                  </span>
-                )}
-                <h3 className='text-xl font-bold mb-4'>{plan.duration}</h3>
-                <div className='text-3xl font-bold mb-2'>
-                  {plan.price}$
-                  <span className='text-sm text-gray-500'>/lesson</span>
-                </div>
-                <div className='p-6'>
-                  <ul className='space-y-3 mb-6'>
-                    {plan.features.map((feature, i) => (
-                      <li key={i} className='flex items-center gap-2'>
-                        <svg
-                          className='w-5 h-5 text-indigo-600'
-                          viewBox='0 0 20 20'
-                          fill='currentColor'
-                        >
-                          <path
-                            fillRule='evenodd'
-                            d='M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z'
-                            clipRule='evenodd'
-                          />
-                        </svg>
-                        {feature}
-                      </li>
-                    ))}
-                  </ul>
-                  <Button className='w-full '>TRY FOR FREE</Button>
-                </div>
-                {/* <div className='text-center bg-green-100 w-full p-7 rounded-b-xl'>
-                  <span className='text-sm'>
-                    1 month of FREE speaking groups
-                  </span>
-                </div> */}
-              </div>
-            ))}
-          </div>
-        </div>
+        {/* <CostSection pricingPlans={pricingPlans} /> */}
+        <PricingTable data={packagesData} />
       </main>
     </div>
   )

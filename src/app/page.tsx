@@ -18,6 +18,7 @@ import Footer from '@/components/footer2'
 import LandingPage from './home2'
 import SubjectList from '@/components/SubjectList'
 import { DecorativeSection } from '@/components/DecorativeSection'
+import { TeacherFeature } from '@/components/TeacherFeature'
 
 export default function Home() {
   // const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
@@ -139,7 +140,7 @@ export default function Home() {
       <LandingPage />
       <DecorativeSection />
       <SubjectList />
-      <Footer />
+      <TeacherFeature />
     </>
   )
 }
