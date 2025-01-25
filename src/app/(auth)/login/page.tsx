@@ -11,7 +11,7 @@ export default async function LoginPage() {
   if (session) {
     const role = session?.user?.role
     if (role === 'ADMIN') {
-      redirect('/admin/dashboard')
+      redirect('/admin')
     } else if (role === 'TEACHER') {
       redirect('/teacher')
     } else {

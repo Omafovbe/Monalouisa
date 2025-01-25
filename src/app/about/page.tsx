@@ -1,5 +1,6 @@
 'use client'
 import { CalltoAction } from '@/components/CallToAction'
+import Footer from '@/components/footer2'
 import Navbar from '@/components/Navbar'
 import { motion } from 'framer-motion'
 // import Image from 'next/image'
@@ -216,6 +217,7 @@ export default function AboutPage() {
         </div>
       </section> */}
       <CalltoAction />
+      <Footer />
     </div>
   )
 }

@@ -14,7 +14,7 @@
 // import { HeroSection } from '@/components/hero-section'
 // import { InstructorsSection } from '@/components/instructors-section'
 // import { TestimonialsSection } from '@/components/testimonials-section'
-// import Footer from '@/components/footer2'
+import Footer from '@/components/footer2'
 import LandingPage from './home2'
 import SubjectList from '@/components/SubjectList'
 import { DecorativeSection } from '@/components/DecorativeSection'
@@ -141,6 +141,7 @@ export default function Home() {
       <DecorativeSection />
       <SubjectList />
       <TeacherFeature />
+      <Footer />
     </>
   )
 }
