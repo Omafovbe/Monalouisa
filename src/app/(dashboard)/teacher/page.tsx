@@ -1,4 +1,4 @@
-import { SignOutButton } from '@/components/auth/SignOutBtn'
+// import { SignOutButton } from '@/components/auth/SignOutBtn'
 import { OverviewCards } from '@/components/dashboard/overview-cards'
 import { Sidebar } from '@/components/dashboard/sidebar'
 import { StudentProgress } from '@/components/dashboard/student-progress'
