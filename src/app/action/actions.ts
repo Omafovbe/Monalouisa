@@ -2,6 +2,8 @@
 
 import db from '@/lib/db'
 import { hash } from 'bcryptjs'
+import { signIn } from '@/lib/auth'
+import { headers } from 'next/headers'
 
 // Add this function to hash passwords
 async function hashPassword(password: string): Promise<string> {
@@ -43,4 +45,9 @@ export async function registerUser(
     console.error(error)
     return { error: 'Error creating user', status: 'error' }
   }
+}
+
+export async function signInAction() {
+  const callbackUrl = (await headers()).get('x-url') || '/'
+  await signIn(undefined, { callbackUrl })
 }

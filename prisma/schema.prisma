@@ -21,13 +21,19 @@ enum ApplicationStatus {
 }
 
 model User {
-    id        Int      @id @default(autoincrement())
-    name      String?
-    email     String   @unique
-    password  String
-    role      UserRole @default(STUDENT)
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+    id            String          @id @default(cuid())
+    name          String?
+    email         String          @unique
+    password      String?
+    emailVerified DateTime?
+    image         String?
+    accounts      Account[]
+    sessions      Session[]
+    role          UserRole        @default(STUDENT)
+    createdAt     DateTime        @default(now())
+    updatedAt     DateTime        @updatedAt
+    // Optional for WebAuthn support
+    Authenticator Authenticator[]
 
     // Role-specific profiles
     teacher Teacher?
@@ -35,9 +41,64 @@ model User {
     admin   Admin?
 }
 
+model Account {
+    userId            String
+    type              String
+    provider          String
+    providerAccountId String
+    refresh_token     String?
+    access_token      String?
+    expires_at        Int?
+    token_type        String?
+    scope             String?
+    id_token          String?
+    session_state     String?
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@id([provider, providerAccountId])
+}
+
+model Session {
+    sessionToken String   @unique
+    userId       String
+    expires      DateTime
+    user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+model VerificationToken {
+    identifier String
+    token      String
+    expires    DateTime
+
+    @@id([identifier, token])
+}
+
+// Optional for WebAuthn support
+model Authenticator {
+    credentialID         String  @unique
+    userId               String
+    providerAccountId    String
+    credentialPublicKey  String
+    counter              Int
+    credentialDeviceType String
+    credentialBackedUp   Boolean
+    transports           String?
+
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@id([userId, credentialID])
+}
+
 model Teacher {
     id                 Int                  @id @default(autoincrement())
-    userId             Int                  @unique
+    userId             String               @unique
     user               User                 @relation(fields: [userId], references: [id])
     bio                String?
     phone              String?
@@ -52,8 +113,8 @@ model Teacher {
 }
 
 model Student {
-    id          Int                  @id @default(autoincrement())
-    userId      Int                  @unique
+    id          String               @id @default(cuid())
+    userId      String               @unique
     user        User                 @relation(fields: [userId], references: [id])
     dateOfBirth DateTime?
     grade       String?
@@ -70,7 +131,7 @@ model Student {
 
 model Admin {
     id        Int      @id @default(autoincrement())
-    userId    Int      @unique
+    userId    String   @unique
     user      User     @relation(fields: [userId], references: [id])
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
@@ -104,7 +165,7 @@ model TeacherApplication {
 
 model Schedule {
     id        Int      @id @default(autoincrement())
-    studentId Int
+    studentId String
     subjectId Int
     dateTime  DateTime
     duration  Int // in minutes
@@ -126,7 +187,7 @@ model SubjectsOnTeachers {
 }
 
 model StudentsOnTeachers {
-    studentId  Int
+    studentId  String
     teacherId  Int
     student    Student  @relation(fields: [studentId], references: [id])
     teacher    Teacher  @relation(fields: [teacherId], references: [id])
@@ -136,7 +197,7 @@ model StudentsOnTeachers {
 }
 
 model StudentsOnSubjects {
-    studentId  Int
+    studentId  String
     subjectId  Int
     student    Student  @relation(fields: [studentId], references: [id])
     subject    Subject  @relation(fields: [subjectId], references: [id])

@@ -3,6 +3,7 @@ import { X, Menu } from 'lucide-react'
 import { useState } from 'react'
 import { Button } from './ui/button'
 import Link from 'next/link'
+import { SignInBtn } from './auth/SignInBtn'
 
 const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
@@ -24,7 +25,7 @@ const Navbar = () => {
         </div>
         <div className='flex gap-4'>
           <Button variant='outline'>Try Free Class1</Button>
-          <Button className=''>Sign In</Button>
+          <SignInBtn />
           <Button
             variant='ghost'
             size='icon'

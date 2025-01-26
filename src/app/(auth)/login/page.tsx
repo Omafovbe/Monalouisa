@@ -1,37 +1,76 @@
-import { LoginForm } from '@/components/login-form'
-import { getServerSession } from 'next-auth'
+import { auth } from '@/lib/auth'
+
+import { signIn } from '@/lib/auth'
+// import { GithubSignIn } from "@/components/github-sign-in";
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { executeAction } from '@/app/action/executeAction'
+import Link from 'next/link'
 import { redirect } from 'next/navigation'
-import { authOptions } from '@/lib/auth'
+import { GoogleSignIn } from '@/components/auth/GoogleSignIn'
 
-export default async function LoginPage() {
-  // Check if user is already authenticated
-  const session = await getServerSession(authOptions)
-
-  // Redirect based on role if already authenticated
-  if (session) {
-    const role = session?.user?.role
-    if (role === 'ADMIN') {
-      redirect('/admin')
-    } else if (role === 'TEACHER') {
-      redirect('/teacher')
-    } else {
-      redirect('/student')
-    }
-  }
+const Page = async () => {
+  const session = await auth()
+  if (session) redirect('/')
 
   return (
-    <div className='flex min-h-svh flex-col items-center justify-center bg-gradient-to-br from-white to-[#6366F1]/5'>
-      <div className='w-full max-w-sm space-y-6 rounded-xl bg-white/80 p-6 shadow-lg backdrop-blur-sm md:max-w-md md:p-8'>
-        <div className='space-y-2 text-center'>
-          <h1 className='text-2xl font-bold tracking-tight text-[#6366F1]'>
-            Welcome back
-          </h1>
-          <p className='text-gray-500'>
-            Enter your credentials to access your account
-          </p>
+    <main className='flex items-center justify-center min-h-screen bg-gray-100'>
+      <div className='bg-white p-8 rounded-lg shadow-md w-full max-w-md'>
+        <div className='w-full max-w-sm mx-auto space-y-6'>
+          <h1 className='text-2xl font-bold text-center mb-6'>Sign In</h1>
+
+          <GoogleSignIn />
+          <div className='relative'>
+            <div className='absolute inset-0 flex items-center'>
+              <span className='w-full border-t' />
+            </div>
+            <div className='relative flex justify-center text-sm'>
+              <span className='bg-background px-2 text-muted-foreground'>
+                Or continue with email
+              </span>
+            </div>
+          </div>
+
+          {/* Email/Password Sign In */}
+          <form
+            className='space-y-4'
+            action={async (formData) => {
+              'use server'
+              await executeAction({
+                actionFn: async () => {
+                  await signIn('credentials', formData)
+                },
+              })
+            }}
+          >
+            <Input
+              name='email'
+              placeholder='Email'
+              type='email'
+              required
+              autoComplete='email'
+            />
+            <Input
+              name='password'
+              placeholder='Password'
+              type='password'
+              required
+              autoComplete='current-password'
+            />
+            <Button className='w-full' type='submit'>
+              Sign In
+            </Button>
+          </form>
+
+          <div className='text-center'>
+            <Button asChild variant='link'>
+              <Link href='/register'>Don&apos;t have an account? Sign up</Link>
+            </Button>
+          </div>
         </div>
-        <LoginForm />
       </div>
-    </div>
+    </main>
   )
 }
+
+export default Page

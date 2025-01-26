@@ -3,7 +3,7 @@
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useActionState } from 'react'
-import { signIn } from 'next-auth/react'
+import { signIn } from '@/lib/auth'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import {
