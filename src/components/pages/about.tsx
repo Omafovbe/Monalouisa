@@ -1,39 +1,13 @@
 'use client'
 import { CalltoAction } from '@/components/CallToAction'
-import Footer from '@/components/footer2'
-import Navbar from '@/components/Navbar'
-import { motion } from 'framer-motion'
-// import Image from 'next/image'
 
-export default function AboutPage() {
+import { PageHeader } from '@/components/page-header'
+import { motion } from 'framer-motion'
+
+export function AboutPage() {
   return (
     <div className='min-h-screen mx-auto bg-gradient-to-b from-gray-50 to-white'>
-      <Navbar />
-      {/* Hero Section */}
-      <section className='relative h-[60vh] -top-16 flex items-center justify-center'>
-        <div className='absolute inset-0 bg-gradient-to-r from-goldyellow-500 to-goldyellow-700'>
-          {/* <Image
-            src='/about-hero.jpg'
-            alt='Italian craftsmanship'
-            fill
-            className='object-cover'
-          /> */}
-        </div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className='relative z-10 text-center'
-        >
-          <h1 className='text-5xl md:text-7xl font-bold text-white mb-6 font-playfair'>
-            About Us
-          </h1>
-          {/* <p className='text-xl md:text-2xl text-gold-300 max-w-2xl mx-auto font-light'>
-            Where Tradition Meets Contemporary Design
-          </p> */}
-        </motion.div>
-      </section>
+      <PageHeader title='About Us' breadcrumbs={[{ label: 'About Us' }]} />
 
       {/* Philosophy Section */}
       <section className='w-[calc(100%-68px)] max-w-[1320px] mx-auto px-4 py-20'>
@@ -48,7 +22,7 @@ export default function AboutPage() {
           </h2>
           <p className='text-xl md:text-2xl text-gray-600 leading-relaxed font-m_reg'>
             Welcome to <strong>Monalouisa Teaches</strong>, where language
-            learning is more than just mastering words—it’s about discovering
+            learning is more than just mastering words—it's about discovering
             new cultures, forming meaningful connections, and unlocking endless
             opportunities
           </p>
@@ -83,7 +57,7 @@ export default function AboutPage() {
               Our Approach
             </h3>
             <p className='text-gray-500 text-center text-lg'>
-              Every child is unique, and so is their learning journey. That’s
+              Every child is unique, and so is their learning journey. That's
               why our courses are structured into Beginner, Intermediate, and
               Advanced levels. This personalized approach ensures that learners
               progress at their own pace, building foundational skills and
@@ -94,7 +68,7 @@ export default function AboutPage() {
       </section>
 
       {/* Materials Section */}
-      <section className=' bg-goldyellow-100  px-4 py-36'>
+      <section className='bg-goldyellow-100 px-4 py-36'>
         <div className='w-[calc(100%-68px)] max-w-[1320px] px-4 mx-auto'>
           <motion.div
             initial={{ opacity: 0 }}
@@ -102,16 +76,13 @@ export default function AboutPage() {
             transition={{ duration: 0.6 }}
             className='grid lg:grid-cols-3 gap-14 place-items-center'
           >
-            <div className=' font-m_bold overflow-hidden text-7xl justify-center'>
+            <div className='font-m_bold overflow-hidden text-7xl justify-center'>
               <h3>What Makes Us Different</h3>
             </div>
             <div className='lg:col-span-2 font-m_reg pl-4'>
-              {/* <h2 className='text-4xl font-bold mb-8 text-gray-900'>
-                Curated Excellence
-              </h2> */}
               <p className='text-2xl text-goldyellow-600 mb-8'>
                 At Monalouisa Teaches, we believe in making learning engaging
-                and effective. Here&#39;s what sets us apart:
+                and effective. Here's what sets us apart:
               </p>
 
               <motion.ul
@@ -161,8 +132,8 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Craftsmanship Section */}
-      <section className=' bg-goldyellow-600  px-4 py-36'>
+      {/* Impact Section */}
+      <section className='bg-goldyellow-600 px-4 py-36'>
         <div className='flex flex-col text-center space-y-10'>
           <h2 className='text-5xl text-goldyellow-100 font-m_bold'>
             Our Impact
@@ -175,49 +146,8 @@ export default function AboutPage() {
           </p>
         </div>
       </section>
-      {/* <section className='container mx-auto px-4 py-20'>
-        <div className='max-w-5xl mx-auto text-center'>
-          <motion.h2
-            initial={{ scale: 0.95, opacity: 0 }}
-            whileInView={{ scale: 1, opacity: 1 }}
-            className='text-5xl font-bold mb-12 text-gray-900 font-playfair'
-          >
-            The 40 Colori Difference
-          </motion.h2>
 
-          <div className='grid md:grid-cols-3 gap-8'>
-            {[
-              {
-                title: 'Hours Crafting',
-                value: '8500+',
-                desc: 'Dedicated to perfection',
-              },
-              {
-                title: 'Natural Fibers',
-                value: '100%',
-                desc: 'Ethically sourced',
-              },
-              { title: 'Artisans', value: '8', desc: 'Master craftsmen' },
-            ].map((item, index) => (
-              <motion.div
-                key={index}
-                initial={{ y: 20, opacity: 0 }}
-                whileInView={{ y: 0, opacity: 1 }}
-                transition={{ delay: index * 0.1 }}
-                className='p-8 bg-white rounded-xl shadow-lg border border-gray-100'
-              >
-                <div className='text-4xl font-bold text-gold-600 mb-4'>
-                  {item.value}
-                </div>
-                <h3 className='text-xl font-semibold mb-2'>{item.title}</h3>
-                <p className='text-gray-600'>{item.desc}</p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section> */}
       <CalltoAction />
-      <Footer />
     </div>
   )
 }
