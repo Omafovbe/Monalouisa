@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
-import DailyIframe from '@daily-co/daily-js'
+import DailyIframe, { DailyCall } from '@daily-co/daily-js'
 import { useRouter } from 'next/navigation'
 
 interface DailyPrebuiltProps {
@@ -16,7 +16,7 @@ interface DailyError {
 }
 
 // Update the activeDaily type
-let activeDaily: DailyIframe | null = null
+let activeDaily: DailyCall | null = null
 
 export default function DailyPrebuilt({
   roomUrl,
