@@ -1,13 +1,13 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import db from '@/lib/db'
 
 export async function PATCH(
-  req: Request,
-  { params }: { params: { id: string } }
+  request: NextRequest,
+  context: { params: { id: string } }
 ) {
   try {
-    const { status } = await req.json()
-    const id = parseInt(params.id)
+    const { status } = await request.json()
+    const id = parseInt(context.params.id)
 
     const application = await db.teacherApplication.update({
       where: { id },
