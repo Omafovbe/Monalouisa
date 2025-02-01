@@ -2,13 +2,16 @@ import type { Metadata } from 'next'
 import { metadata as siteMetadata } from '@/config/metadata'
 import { notFound } from 'next/navigation'
 
-interface PageProps {
+type PageProps = {
   params: {
     page: string
   }
+  searchParams: { [key: string]: string | string[] | undefined }
 }
 
-export const generateMetadata = ({ params }: PageProps): Metadata => {
+export const generateMetadata = async ({
+  params,
+}: PageProps): Promise<Metadata> => {
   const page = params.page as keyof typeof siteMetadata
 
   if (!siteMetadata[page]) {
@@ -55,7 +58,7 @@ export const generateMetadata = ({ params }: PageProps): Metadata => {
   }
 }
 
-export default function Page({ params }: PageProps) {
+export default async function Page({ params }: PageProps) {
   const page = params.page as keyof typeof siteMetadata
 
   if (!siteMetadata[page]) {
