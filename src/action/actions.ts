@@ -4,6 +4,7 @@ import { hash } from 'bcryptjs'
 import { signIn } from '@/lib/auth'
 import { headers } from 'next/headers'
 import { revalidatePath } from 'next/cache'
+import { ApplicationStatus } from '@prisma/client'
 
 // Add this function to hash passwords
 async function hashPassword(password: string): Promise<string> {
@@ -162,17 +163,69 @@ export async function updateApplicationStatus(
   status: 'APPROVED' | 'REJECTED'
 ) {
   try {
-    const application = await db.teacherApplication.update({
-      where: { id },
-      data: {
-        status,
-        updatedAt: new Date(),
-      },
+    // Use a transaction to update both models
+    const result = await db.$transaction(async (tx) => {
+      // First update the application
+      const application = await tx.teacherApplication.update({
+        where: { id },
+        data: {
+          status,
+          updatedAt: new Date(),
+        },
+        include: {
+          teacher: true,
+        },
+      })
+
+      // Then update the teacher's status
+      await tx.teacher.update({
+        where: { id: application.teacherId },
+        data: {
+          status,
+          // If approved, set the hire date
+          ...(status === 'APPROVED' && {
+            hireDate: new Date(),
+          }),
+        },
+      })
+
+      return application
     })
 
     revalidatePath('/admin/applications')
-    return { success: true, application }
+    return { success: true, application: result }
   } catch (error) {
+    console.error('Error updating application status:', error)
     return { error: 'Failed to update application status' }
+  }
+}
+
+// Get all teachers with optional status filter
+export async function getTeachers(status?: ApplicationStatus) {
+  try {
+    const teachers = await db.teacher.findMany({
+      where: status ? { status } : undefined,
+      include: {
+        user: {
+          select: {
+            name: true,
+            email: true,
+          },
+        },
+        teacherApplication: {
+          select: {
+            qualifications: true,
+            yearsOfExperience: true,
+            preferredAgeGroup: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    })
+    return { teachers }
+  } catch (error) {
+    return { error: 'Failed to fetch teachers' }
   }
 }

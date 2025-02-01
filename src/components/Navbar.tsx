@@ -7,12 +7,30 @@ import { SignInButton } from './auth/SignInBtn'
 import { SignOutButton } from './auth/SignOutBtn'
 import { useSession } from 'next-auth/react'
 
+// Navigation configuration
+const navigationLinks = [
+  { label: 'Classes', href: '/classes' },
+  { label: 'About', href: '/about' },
+  { label: 'Teachers', href: '/teach' },
+  { label: 'Cost', href: '/cost' },
+]
+
+const roleBasedLinks = {
+  ADMIN: { label: 'Admin Dashboard', href: '/admin' },
+  TEACHER: { label: 'Teacher Dashboard', href: '/teacher' },
+}
+
 const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const { data: session, status } = useSession()
   // console.log('nav: ', session)
 
   const isLoading = status === 'loading'
+
+  const getRoleBasedLink = () => {
+    const userRole = session?.user?.role as keyof typeof roleBasedLinks
+    return roleBasedLinks[userRole]
+  }
 
   return (
     <>
@@ -22,20 +40,16 @@ const Navbar = () => {
         </h1>
 
         <div className='hidden md:flex items-center gap-4'>
-          <span>Classes</span>
-          <span>
-            <Link href='/about'>About</Link>
-          </span>
-          <span>Teachers</span>
-          <span>Cost</span>
-          {session?.user?.role === 'ADMIN' && (
-            <Link href='/admin'>
-              <span className='text-goldyellow-600'>Admin Dashboard</span>
-            </Link>
-          )}
-          {session?.user?.role === 'TEACHER' && (
-            <Link href='/teacher'>
-              <span className='text-goldyellow-600'>Teacher Dashboard</span>
+          {navigationLinks.map((link) => (
+            <span key={link.href}>
+              <Link href={link.href}>{link.label}</Link>
+            </span>
+          ))}
+          {session?.user?.role && getRoleBasedLink() && (
+            <Link href={getRoleBasedLink()!.href}>
+              <span className='text-goldyellow-600'>
+                {getRoleBasedLink()!.label}
+              </span>
             </Link>
           )}
         </div>
@@ -74,50 +88,23 @@ const Navbar = () => {
         } bg-white shadow-lg z-30`}
       >
         <div className='container flex flex-col space-y-4 py-4'>
-          <Link
-            href='/'
-            className='text-sm font-medium text-muted-foreground transition-colors hover:text-primary'
-            onClick={() => setIsMobileMenuOpen(false)}
-          >
-            Home
-          </Link>
-          <Link
-            href='/about'
-            className='text-sm font-medium text-muted-foreground transition-colors hover:text-primary'
-            onClick={() => setIsMobileMenuOpen(false)}
-          >
-            About
-          </Link>
-          <Link
-            href='/contact'
-            className='text-sm font-medium text-muted-foreground transition-colors hover:text-primary'
-            onClick={() => setIsMobileMenuOpen(false)}
-          >
-            Contact
-          </Link>
-          <Link
-            href='/#'
-            className='text-gray-600 hover:text-indigo-600 transition-colors'
-            onClick={() => setIsMobileMenuOpen(false)}
-          >
-            Teachers
-          </Link>
-          {session?.user?.role === 'ADMIN' && (
+          {navigationLinks.map((link) => (
             <Link
-              href='/admin'
-              className='text-goldyellow-600 hover:text-goldyellow-700 transition-colors'
+              key={link.href}
+              href={link.href}
+              className='text-sm font-medium text-muted-foreground transition-colors hover:text-primary'
               onClick={() => setIsMobileMenuOpen(false)}
             >
-              Admin Dashboard
+              {link.label}
             </Link>
-          )}
-          {session?.user?.role === 'TEACHER' && (
+          ))}
+          {session?.user?.role && getRoleBasedLink() && (
             <Link
-              href='/teacher'
+              href={getRoleBasedLink()!.href}
               className='text-goldyellow-600 hover:text-goldyellow-700 transition-colors'
               onClick={() => setIsMobileMenuOpen(false)}
             >
-              Teacher Dashboard
+              {getRoleBasedLink()!.label}
             </Link>
           )}
         </div>

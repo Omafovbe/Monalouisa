@@ -1,12 +1,25 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
-import { signOut } from '@/lib/auth'
+import { signOut as nextAuthSignOut, useSession } from 'next-auth/react'
 
 export function SignOutButton() {
-  return (
-    <Button onClick={() => signOut({ redirect: true, redirectTo: '/' })}>
-      Sign Out
-    </Button>
-  )
+  const { data: session, status } = useSession()
+
+  const handleSignOut = async () => {
+    await nextAuthSignOut({
+      callbackUrl: '/',
+      redirect: true,
+    })
+  }
+
+  if (status === 'loading') {
+    return <Button disabled>Loading...</Button>
+  }
+
+  if (!session) {
+    return null
+  }
+
+  return <Button onClick={handleSignOut}>Sign Out</Button>
 }

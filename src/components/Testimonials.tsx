@@ -49,7 +49,7 @@ const testimonials = [
 
 export function Testimonials() {
   return (
-    <section className='w-full py-12 md:py-24 lg:py-32 bg-gradient-to-b from-white to-gray-50'>
+    <section className='w-full overflow-x-hidden py-12 md:py-24 lg:py-32 bg-gradient-to-b from-white to-gray-50'>
       <div className='container mx-auto px-4 md:px-6'>
         <div className='flex flex-col items-center justify-center space-y-4 text-center mb-12'>
           <motion.h2

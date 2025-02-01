@@ -104,12 +104,14 @@ model Teacher {
     phone              String?
     profilePicture     String?
     hireDate           DateTime?
-    status             String               @default("PENDING") // active, inactive, on_leave
+    status             ApplicationStatus    @default(PENDING)
     subjects           SubjectsOnTeachers[]
     students           StudentsOnTeachers[]
     teacherApplication TeacherApplication?
     createdAt          DateTime             @default(now())
     updatedAt          DateTime             @updatedAt
+
+    @@index([status])
 }
 
 model Student {
@@ -152,7 +154,7 @@ model Subject {
 model TeacherApplication {
     id                Int               @id @default(autoincrement())
     teacherId         Int               @unique
-    teacher           Teacher           @relation(fields: [teacherId], references: [id])
+    teacher           Teacher           @relation(fields: [teacherId], references: [id], onUpdate: Cascade)
     status            ApplicationStatus @default(PENDING)
     name              String
     email             String
@@ -166,6 +168,8 @@ model TeacherApplication {
     reviewNotes       String?           @db.Text
     createdAt         DateTime          @default(now())
     updatedAt         DateTime          @updatedAt
+
+    @@index([status])
 }
 
 model Schedule {

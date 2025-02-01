@@ -1,14 +1,19 @@
 import type { Metadata } from 'next'
 import { metadata as siteMetadata } from '@/config/metadata'
+import { notFound } from 'next/navigation'
 
 interface PageProps {
   params: {
-    page: keyof typeof siteMetadata
+    page: string
   }
 }
 
 export const generateMetadata = ({ params }: PageProps): Metadata => {
-  const page = params.page
+  const page = params.page as keyof typeof siteMetadata
+
+  if (!siteMetadata[page]) {
+    notFound()
+  }
 
   return {
     title: siteMetadata[page].title,
@@ -24,7 +29,7 @@ export const generateMetadata = ({ params }: PageProps): Metadata => {
           url: '/og-image.jpg',
           width: 1200,
           height: 630,
-          alt: `Monlouisa Teaches - ${page}`,
+          alt: `Monalouisa Teaches - ${page}`,
         },
       ],
       locale: 'en_US',
@@ -48,4 +53,14 @@ export const generateMetadata = ({ params }: PageProps): Metadata => {
       },
     },
   }
+}
+
+export default function Page({ params }: PageProps) {
+  const page = params.page as keyof typeof siteMetadata
+
+  if (!siteMetadata[page]) {
+    ;<span className='text-red-500'>notFound()</span>
+  }
+
+  return null // This page only provides metadata, no visible content
 }
