@@ -138,6 +138,7 @@ export async function getTeacherApplications() {
     })
     return { applications }
   } catch (error) {
+    console.error('Error fetching applications:', error)
     return { error: 'Failed to fetch applications' }
   }
 }
@@ -153,6 +154,7 @@ export async function getTeacherApplication(id: number) {
     })
     return { application }
   } catch (error) {
+    console.error('Error fetching application:', error)
     return { error: 'Failed to fetch application' }
   }
 }
@@ -226,6 +228,7 @@ export async function getTeachers(status?: ApplicationStatus) {
     })
     return { teachers }
   } catch (error) {
+    console.error('Error fetching teachers:', error)
     return { error: 'Failed to fetch teachers' }
   }
 }

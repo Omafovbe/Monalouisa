@@ -29,8 +29,8 @@ export default function ContactPage() {
                 Get in Touch
               </motion.h1>
               <p className='text-[#967117] text-lg'>
-                Have questions? We're here to help! Reach out to our friendly
-                team.
+                Have questions? We&#39;re here to help! Reach out to our
+                friendly team.
               </p>
             </div>
 

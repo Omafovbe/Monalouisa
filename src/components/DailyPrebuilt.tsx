@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
-import DailyIframe from '@daily-co/daily-js'
+import DailyIframe, { DailyCall } from '@daily-co/daily-js'
 import { useRouter } from 'next/navigation'
 
 interface DailyPrebuiltProps {
@@ -10,8 +10,13 @@ interface DailyPrebuiltProps {
   userName?: string
 }
 
-// Keep track of active Daily instance globally
-let activeDaily: any = null
+interface DailyError {
+  errorMsg?: string
+  message?: string
+}
+
+// Update the activeDaily type
+let activeDaily: DailyCall | null = null
 
 export default function DailyPrebuilt({
   roomUrl,
@@ -27,14 +32,12 @@ export default function DailyPrebuilt({
 
   const cleanup = async () => {
     try {
-      // First, try to clean up any existing iframes in the DOM
       const existingIframes = document.querySelectorAll(
         'iframe[data-daily-iframe]'
       )
       existingIframes.forEach((iframe) => iframe.remove())
 
       if (activeDaily) {
-        console.log('Cleaning up Daily instance')
         if (activeDaily.meetingState() === 'joined-meeting') {
           await activeDaily.leave()
         }
@@ -42,45 +45,40 @@ export default function DailyPrebuilt({
         activeDaily = null
       }
       setIsInitialized(false)
+      /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
     } catch (err) {
-      console.error('Error during cleanup:', err)
+      setError('Error during cleanup')
     }
   }
 
   useEffect(() => {
     const initDaily = async () => {
-      // If already initialized or missing requirements, don't proceed
       if (isInitialized || !roomUrl || !iframeRef.current) {
         return
       }
 
       try {
-        // Clean up any existing instance first
         await cleanup()
 
-        // Check for any existing Daily iframes before creating new one
         const existingIframes = document.querySelectorAll(
           'iframe[data-daily-iframe]'
         )
         if (existingIframes.length > 0) {
-          console.log('Found existing Daily iframes, cleaning up...')
           existingIframes.forEach((iframe) => iframe.remove())
-          // Wait a bit for cleanup to complete
           await new Promise((resolve) => setTimeout(resolve, 1000))
         }
 
-        console.log('Creating new Daily instance')
         activeDaily = DailyIframe.createFrame(iframeRef.current, {
           showLeaveButton: true,
           showFullscreenButton: true,
           userName: userName,
           theme: {
             colors: {
-              accent: '#ffcb05', // Primary yellow
-              accentText: '#1a1a1a', // Dark gray for contrast on yellow
-              background: '#ffffff', // Clean white background
-              backgroundAccent: '#fff3d6', // Light yellow for accented backgrounds
-              baseText: '#2d2d2d', // Soft black for better readability
+              accent: '#ffcb05',
+              accentText: '#1a1a1a',
+              background: '#ffffff',
+              backgroundAccent: '#fff3d6',
+              baseText: '#2d2d2d',
             },
           },
           iframeStyle: {
@@ -91,33 +89,26 @@ export default function DailyPrebuilt({
           },
         })
 
-        // Set up event handlers
         activeDaily.on('loading', () => {
-          console.log('Daily: Loading')
           setIsLoading(true)
         })
 
         activeDaily.on('loaded', () => {
-          console.log('Daily: Loaded')
           setIsLoading(false)
           setIsInitialized(true)
         })
 
         activeDaily.on('left-meeting', async () => {
-          console.log('Daily: Left meeting')
           await cleanup()
           router.push(`/learn/leave?room=${roomName}&userName=${userName}`)
         })
 
-        activeDaily.on('error', async (event: any) => {
-          console.error('Daily error event:', event)
+        activeDaily.on('error', async (event: DailyError) => {
           if (event?.errorMsg?.includes('Duplicate DailyIframe')) {
-            console.log('Handling duplicate iframe error...')
             await cleanup()
             setError(null)
             setIsLoading(true)
             setIsInitialized(false)
-            // Try to reinitialize after a short delay
             setTimeout(() => {
               setError(null)
               setIsInitialized(false)
@@ -128,24 +119,18 @@ export default function DailyPrebuilt({
           await cleanup()
         })
 
-        // Join the room
-        console.log('Joining room with token:', token ? 'Yes' : 'No')
         await activeDaily.join({
           url: roomUrl,
           ...(token && { token }),
           userName: userName,
         })
-
-        console.log('Successfully joined room')
-      } catch (err: any) {
-        console.error('Error in Daily initialization:', err)
-        if (err?.message?.includes('Duplicate DailyIframe')) {
-          console.log('Handling duplicate iframe error in catch block...')
+      } catch (err: unknown) {
+        const error = err as DailyError
+        if (error?.message?.includes('Duplicate DailyIframe')) {
           await cleanup()
           setError(null)
           setIsLoading(true)
           setIsInitialized(false)
-          // Try to reinitialize after a short delay
           setTimeout(() => {
             setError(null)
             setIsInitialized(false)
@@ -153,7 +138,9 @@ export default function DailyPrebuilt({
           return
         }
         setError(
-          err instanceof Error ? err.message : 'Failed to initialize video call'
+          error instanceof Error
+            ? error.message
+            : 'Failed to initialize video call'
         )
         setIsLoading(false)
         await cleanup()
@@ -162,7 +149,6 @@ export default function DailyPrebuilt({
 
     initDaily()
 
-    // Cleanup on unmount
     return () => {
       cleanup()
     }

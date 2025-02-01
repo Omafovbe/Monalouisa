@@ -4,11 +4,14 @@ import { useRouter } from 'next/navigation'
 
 export default function Learn2Page() {
   const [isCreating, setIsCreating] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const router = useRouter()
 
   const createNewRoom = async () => {
     try {
       setIsCreating(true)
+      setError(null)
+
       const response = await fetch('/api/daily', {
         method: 'POST',
         headers: {
@@ -26,7 +29,7 @@ export default function Learn2Page() {
       const data = await response.json()
       router.push(`/learn/join?room=${data.roomName}`)
     } catch (err) {
-      console.error('Error creating room:', err)
+      setError(err instanceof Error ? err.message : 'Failed to create room')
       setIsCreating(false)
     }
   }
@@ -39,6 +42,12 @@ export default function Learn2Page() {
         </h1>
 
         <div className='space-y-4'>
+          {error && (
+            <div className='text-red-600 text-center p-2 bg-red-50 rounded'>
+              {error}
+            </div>
+          )}
+
           <button
             onClick={createNewRoom}
             disabled={isCreating}

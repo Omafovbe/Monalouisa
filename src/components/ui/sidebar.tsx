@@ -39,11 +39,11 @@ function useSidebar() {
   return context
 }
 
-// Types for sidebar components
-interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {}
-
 // Sidebar component
-export function Sidebar({ className, ...props }: SidebarProps) {
+export function Sidebar({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) {
   const pathname = usePathname()
   const { isCollapsed, toggleSidebar } = useSidebar()
 

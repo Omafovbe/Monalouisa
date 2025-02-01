@@ -29,6 +29,7 @@ const ManageTeachers = () => {
     queryKey: ['teachers', selectedStatus],
     queryFn: async () => {
       const status = selectedStatus === 'ALL' ? undefined : selectedStatus
+      /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
       return getTeachers(status as any)
     },
   })
@@ -76,6 +77,7 @@ const ManageTeachers = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
+              {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
               {teachers.map((teacher: any) => (
                 <TableRow key={teacher.id}>
                   <TableCell>{teacher.user.name}</TableCell>

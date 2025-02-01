@@ -20,8 +20,8 @@ import { submitTeacherApplication } from '@/action/actions'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { useToast } from '@/hooks/use-toast'
-import Navbar from '../Navbar'
-import Footer from '../footer2'
+// import Navbar from '../Navbar'
+// import Footer from '../footer2'
 
 const formSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -78,6 +78,7 @@ export function TeachPage() {
         })
       }
     } catch (error) {
+      console.error('Error submitting application:', error)
       toast({
         title: 'Error',
         description: 'An unexpected error occurred. Please try again.',
