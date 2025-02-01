@@ -9,10 +9,10 @@ import { useSession } from 'next-auth/react'
 
 // Navigation configuration
 const navigationLinks = [
-  { label: 'Classes', href: '/classes' },
+  { label: 'Classes', href: '#' },
   { label: 'About', href: '/about' },
   { label: 'Teachers', href: '/teach' },
-  { label: 'Cost', href: '/cost' },
+  { label: 'Learn', href: '/learn' },
 ]
 
 const roleBasedLinks = {
