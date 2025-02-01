@@ -1,4 +1,34 @@
-export { auth as middleware } from '@/lib/auth'
+// export { auth as middleware } from '@/lib/auth'
+
+import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
+import { auth } from '@/lib/auth'
+
+// Using a more precise pattern to match all admin routes
+const protectedRoutes = ['/admin'] // This will match /admin and all its subroutes
+
+// Out of bound for all except admin
+
+const middleware = async (req: NextRequest) => {
+  const session = await auth()
+
+  console.log('session: ', session)
+  console.log('path: ', req.nextUrl.pathname)
+
+  const path = req.nextUrl.pathname
+
+  // Check if it's an admin route and user is not admin
+  if (
+    (path === '/admin' || path.startsWith('/admin/')) &&
+    (!session || session.user?.role !== 'ADMIN')
+  ) {
+    return NextResponse.redirect(new URL('/unauthorized', req.url))
+  }
+
+  return NextResponse.next()
+}
+
+export default middleware
 
 // export default withAuth(
 //   function middleware(req) {
