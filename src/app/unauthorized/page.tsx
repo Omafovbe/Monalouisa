@@ -13,7 +13,7 @@ export default function UnauthorizedPage() {
         </CardHeader>
         <CardContent className='text-center space-y-4'>
           <p className='text-muted-foreground'>
-            You don't have permission to access this page.
+            You don&#39;t have permission to access this page.
           </p>
           <Button asChild>
             <Link href='/'>Return to Home</Link>

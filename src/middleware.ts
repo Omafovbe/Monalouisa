@@ -5,16 +5,12 @@ import type { NextRequest } from 'next/server'
 import { auth } from '@/lib/auth'
 
 // Using a more precise pattern to match all admin routes
-const protectedRoutes = ['/admin'] // This will match /admin and all its subroutes
+// const protectedRoutes = ['/admin'] // This will match /admin and all its subroutes
 
 // Out of bound for all except admin
 
 const middleware = async (req: NextRequest) => {
   const session = await auth()
-
-  console.log('session: ', session)
-  console.log('path: ', req.nextUrl.pathname)
-
   const path = req.nextUrl.pathname
 
   // Check if it's an admin route and user is not admin

@@ -22,9 +22,9 @@ export function AboutPage() {
           </h2>
           <p className='text-xl md:text-2xl text-gray-600 leading-relaxed font-m_reg'>
             Welcome to <strong>Monalouisa Teaches</strong>, where language
-            learning is more than just mastering words—it's about discovering
-            new cultures, forming meaningful connections, and unlocking endless
-            opportunities
+            learning is more than just mastering words—it&#39;s about
+            discovering new cultures, forming meaningful connections, and
+            unlocking endless opportunities
           </p>
         </motion.div>
 
@@ -57,11 +57,11 @@ export function AboutPage() {
               Our Approach
             </h3>
             <p className='text-gray-500 text-center text-lg'>
-              Every child is unique, and so is their learning journey. That's
-              why our courses are structured into Beginner, Intermediate, and
-              Advanced levels. This personalized approach ensures that learners
-              progress at their own pace, building foundational skills and
-              advancing toward fluency seamlessly.
+              Every child is unique, and so is their learning journey.
+              That&rsquo;s why our courses are structured into Beginner,
+              Intermediate, and Advanced levels. This personalized approach
+              ensures that learners progress at their own pace, building
+              foundational skills and advancing toward fluency seamlessly.
             </p>
           </motion.div>
         </div>
@@ -82,7 +82,7 @@ export function AboutPage() {
             <div className='lg:col-span-2 font-m_reg pl-4'>
               <p className='text-2xl text-goldyellow-600 mb-8'>
                 At Monalouisa Teaches, we believe in making learning engaging
-                and effective. Here's what sets us apart:
+                and effective. Here&#39;s what sets us apart:
               </p>
 
               <motion.ul

@@ -50,6 +50,7 @@ export default function JoinRoomPage() {
     joinRoom()
   }, [roomName])
 
+  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
   const handleLeave = () => {
     router.push('/learn2/leave')
   }

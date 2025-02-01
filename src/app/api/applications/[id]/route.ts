@@ -16,6 +16,7 @@ export async function PATCH(
 
     return NextResponse.json(application)
   } catch (error) {
+    console.error('Error updating application:', error)
     return NextResponse.json(
       { error: 'Failed to update application' },
       { status: 500 }

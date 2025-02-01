@@ -59,7 +59,7 @@ export default function Page({ params }: PageProps) {
   const page = params.page as keyof typeof siteMetadata
 
   if (!siteMetadata[page]) {
-    ;<span className='text-red-500'>notFound()</span>
+    notFound()
   }
 
   return null // This page only provides metadata, no visible content

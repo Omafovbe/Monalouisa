@@ -67,7 +67,7 @@ export function Testimonials() {
             className='max-w-[600px] text-gray-500 md:text-xl/relaxed'
           >
             Join hundreds of satisfied parents who have transformed their
-            children's language learning journey
+            children&#39;s language learning journey
           </motion.p>
         </div>
 
@@ -93,7 +93,7 @@ export function Testimonials() {
               <CardContent className='p-6'>
                 <QuoteIcon className='h-8 w-8 text-goldyellow-500 mb-4' />
                 <p className='text-gray-700 text-lg mb-6 italic leading-relaxed'>
-                  "{testimonial.text}"
+                  &#34;{testimonial.text}&#34;
                 </p>
                 <div className='flex items-center gap-4'>
                   <Avatar>

@@ -10,7 +10,6 @@ import AgoraRTC, {
   usePublish,
   useRemoteUsers,
   useRTCClient,
-  ICameraVideoTrack,
 } from 'agora-rtc-react'
 import { Mic, MicOff, VideoOff, Video, MonitorUp, Monitor } from 'lucide-react'
 
@@ -30,8 +29,10 @@ const AgoraInterVidCall = ({
   const [isBrowser, setIsBrowser] = useState(false)
   const [calling, setCalling] = useState(true)
   const [isScreenSharing, setIsScreenSharing] = useState(false)
+  /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
   const [screenTrack, setScreenTrack] = useState<any>(null)
 
+  /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
   useEffect(() => {
     setIsBrowser(true)
   }, [])
@@ -137,6 +138,7 @@ const AgoraInterVidCall = ({
         <>
           <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4'>
             <div className='relative aspect-video bg-gray-800 rounded-lg overflow-hidden'>
+              <h3>{meetingTitle}</h3>
               <LocalUser
                 audioTrack={localMicrophoneTrack}
                 cameraOn={cameraOn}
