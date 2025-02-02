@@ -2,7 +2,7 @@
 
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
-import { auth } from '@/lib/auth'
+// import { auth } from '@/lib/auth'
 
 // Using a more precise pattern to match all admin routes
 // const protectedRoutes = ['/admin'] // This will match /admin and all its subroutes
