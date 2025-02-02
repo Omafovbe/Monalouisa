@@ -85,7 +85,7 @@ const FAQItem = ({ faq, index }: { faq: FAQ; index: number }) => {
   )
 }
 
-const faq = () => {
+const FAQ = () => {
   return (
     <div className='mx-auto max-w-4xl px-4 py-16 sm:px-6 lg:px-8'>
       <motion.div
@@ -146,4 +146,4 @@ const faq = () => {
   )
 }
 
-export default faq
+export default FAQ

@@ -1,30 +1,41 @@
-export { auth as middleware } from '@/lib/auth'
+// export { auth as middleware } from '@/lib/auth'
 
-// import { NextResponse } from 'next/server'
-// import type { NextRequest } from 'next/server'
-// import { auth } from '@/lib/auth'
+import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
+import { auth } from '@/lib/auth'
 
 // // Using a more precise pattern to match all admin routes
 // // const protectedRoutes = ['/admin'] // This will match /admin and all its subroutes
 
-// // Out of bound for all except admin
+// Out of bound for all except admin
 
-// const middleware = async (req: NextRequest) => {
-// const session = await auth()
-// const path = req.nextUrl.pathname
+const middleware = async (req: NextRequest) => {
+  const session = await auth()
+  const path = req.nextUrl.pathname
 
-// Check if it's an admin route and user is not admin
-// if (
-//   (path === '/admin' || path.startsWith('/admin/')) &&
-//   (!session || session.user?.role !== 'ADMIN')
-// ) {
-//   return NextResponse.redirect(new URL('/unauthorized', req.url))
-// }
+  // Add debug logging
+  console.log('Middleware Session:', {
+    session,
+    userId: session?.user?.id,
+    userRole: session?.user?.role,
+    path,
+  })
+  // Check if it's an admin route and user is not admin
+  if (
+    (path === '/admin' || path.startsWith('/admin/')) &&
+    (!session || session.user?.role !== 'ADMIN')
+  ) {
+    return NextResponse.redirect(new URL('/unauthorized', req.url))
+  }
 
-//   return NextResponse.next()
-// }
+  if (session?.user?.role === 'ADMIN') {
+    return NextResponse.next()
+  }
 
-// export default middleware
+  return NextResponse.next()
+}
+
+export default middleware
 
 // export default withAuth(
 //   function middleware(req) {
@@ -79,6 +90,7 @@ export const config = {
      * - api routes (/api/*)
      * - static files (/_next/*, /favicon.ico, etc.)
      */
-    '/((?!api|_next|login|register|favicon.ico|about$|^$).*)',
+    // '/((?!api|_next|login|register|favicon.ico|public|about$|avatars$).*)',
+    '/((?!api|_next/static|_next/image|favicon.ico|public).*)',
   ],
 }

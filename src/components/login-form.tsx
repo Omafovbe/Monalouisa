@@ -52,7 +52,7 @@ export function LoginForm() {
         if (result.error) {
           return {
             status: 'error',
-            error: 'Invalid email or password',
+            error: result.error,
           }
         }
 
@@ -61,10 +61,12 @@ export function LoginForm() {
           error: null,
         }
       } catch (error) {
-        console.log(error)
         return {
           status: 'error',
-          error: 'An unexpected error occurred',
+          error:
+            error instanceof Error
+              ? error.message
+              : 'An unexpected error occurred',
         }
       }
     },

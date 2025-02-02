@@ -19,6 +19,7 @@ import LandingPage from './home2'
 import SubjectList from '@/components/SubjectList'
 import { DecorativeSection } from '@/components/DecorativeSection'
 import { TeacherFeature } from '@/components/TeacherFeature'
+import FAQ from '@/components/faq'
 
 export default function Home() {
   // const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
@@ -141,6 +142,7 @@ export default function Home() {
       <DecorativeSection />
       <SubjectList />
       <TeacherFeature />
+      <FAQ />
     </>
   )
 }
