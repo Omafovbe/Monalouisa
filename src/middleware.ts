@@ -14,12 +14,12 @@ const middleware = async (req: NextRequest) => {
   const path = req.nextUrl.pathname
 
   // Check if it's an admin route and user is not admin
-  if (
-    (path === '/admin' || path.startsWith('/admin/')) &&
-    (!session || session.user?.role !== 'ADMIN')
-  ) {
-    return NextResponse.redirect(new URL('/unauthorized', req.url))
-  }
+  // if (
+  //   (path === '/admin' || path.startsWith('/admin/')) &&
+  //   (!session || session.user?.role !== 'ADMIN')
+  // ) {
+  //   return NextResponse.redirect(new URL('/unauthorized', req.url))
+  // }
 
   return NextResponse.next()
 }
