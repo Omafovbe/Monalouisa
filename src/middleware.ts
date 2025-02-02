@@ -10,8 +10,8 @@ import { auth } from '@/lib/auth'
 // Out of bound for all except admin
 
 const middleware = async (req: NextRequest) => {
-  const session = await auth()
-  const path = req.nextUrl.pathname
+  // const session = await auth()
+  // const path = req.nextUrl.pathname
 
   // Check if it's an admin route and user is not admin
   // if (
