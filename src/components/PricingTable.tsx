@@ -47,7 +47,7 @@ const PricingTable: React.FC<PricingTableProps> = ({ data }) => {
             onClick={() => setActiveBilling(type)}
             className={`flex-1 py-2 text-lg font-bold rounded-md relative z-10 transition-colors ${
               activeBilling === type
-                ? 'text-goldyellow-600'
+                ? 'text-white'
                 : 'text-gray-600 hover:text-gray-800'
             }`}
           >
@@ -56,7 +56,7 @@ const PricingTable: React.FC<PricingTableProps> = ({ data }) => {
             {activeBilling === type && (
               <motion.div
                 layoutId='activeTab'
-                className='absolute inset-0 bg-goldyellow-200 rounded-md -z-10'
+                className='absolute inset-0 bg-[#0b92f9] rounded-md -z-10'
                 transition={{ type: 'spring', stiffness: 300, damping: 20 }}
               />
             )}
@@ -82,7 +82,7 @@ const PricingTable: React.FC<PricingTableProps> = ({ data }) => {
 
             const priceValues = pkg.monthlyCost
               .split(' - ')
-              .map((s) => parseInt(s.replace(/\D/g, '')))
+              .map((s) => parseFloat(s.replace(/[^0-9.]/g, '')))
             const [minCost, maxCost] = priceValues
             const cost = activeBilling === 'standard' ? minCost : maxCost
 
@@ -155,9 +155,7 @@ const PackageCard: React.FC<PackageCardProps> = ({
           animate={{ scale: 1 }}
           transition={{ type: 'spring', stiffness: 300 }}
         >
-          <span className='text-2xl font-bold text-goldyellow-600'>
-            {cost} AED
-          </span>
+          <span className='text-2xl font-bold text-korma'>{cost} USD</span>
         </motion.div>
 
         <motion.div

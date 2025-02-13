@@ -32,18 +32,52 @@ export async function registerUser(
     if (existingUser) {
       return { error: 'User already exists', status: 'error' }
     }
-    const hashedPassword = await hashPassword(password)
-    const user = await db.user.create({
-      data: {
-        email,
-        password: hashedPassword,
-        name,
-        role,
-      },
+
+    // Create user and role-specific record in a transaction
+    const result = await db.$transaction(async (tx) => {
+      // Create the user
+      const hashedPassword = await hashPassword(password)
+      const user = await tx.user.create({
+        data: {
+          email,
+          password: hashedPassword,
+          name,
+          role,
+        },
+      })
+
+      // Create role-specific record based on user role
+      switch (role) {
+        case 'STUDENT':
+          await tx.student.create({
+            data: {
+              userId: user.id,
+            },
+          })
+          break
+        case 'TEACHER':
+          await tx.teacher.create({
+            data: {
+              userId: user.id,
+              status: 'PENDING',
+            },
+          })
+          break
+        case 'ADMIN':
+          await tx.admin.create({
+            data: {
+              userId: user.id,
+            },
+          })
+          break
+      }
+
+      return user
     })
-    return user
+
+    return { success: true, user: result }
   } catch (error) {
-    console.error(error)
+    console.error('Error creating user:', error)
     return { error: 'Error creating user', status: 'error' }
   }
 }
@@ -216,7 +250,6 @@ export async function getTeachers(status?: ApplicationStatus) {
         },
         teacherApplication: {
           select: {
-            qualifications: true,
             yearsOfExperience: true,
             preferredAgeGroup: true,
           },
@@ -229,6 +262,410 @@ export async function getTeachers(status?: ApplicationStatus) {
     return { teachers }
   } catch (error) {
     console.error('Error fetching teachers:', error)
+    return { error: 'Failed to fetch teachers' }
+  }
+}
+
+// Student Management
+export async function getStudents() {
+  try {
+    const students = await db.student.findMany({
+      include: {
+        user: {
+          select: {
+            name: true,
+            email: true,
+          },
+        },
+        teachers: {
+          include: {
+            teacher: {
+              include: {
+                user: {
+                  select: {
+                    name: true,
+                    email: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    })
+    return { students, error: null }
+  } catch (error) {
+    console.error('Error fetching students:', error)
+    return { students: [], error: 'Failed to fetch students' }
+  }
+}
+
+// Subject Management
+export async function getSubjects() {
+  try {
+    const subjects = await db.subject.findMany({
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        createdAt: true,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    })
+    return { subjects, error: null }
+  } catch (error) {
+    console.error('Error fetching subjects:', error)
+    return { subjects: [], error: 'Failed to fetch subjects' }
+  }
+}
+
+export async function addSubject({
+  name,
+  description,
+}: {
+  name: string
+  description: string
+}) {
+  try {
+    // Check if subject already exists
+    const existingSubject = await db.subject.findUnique({
+      where: { name },
+    })
+
+    if (existingSubject) {
+      return {
+        success: false,
+        error: 'A subject with this name already exists',
+      }
+    }
+
+    // Create new subject
+    const subject = await db.subject.create({
+      data: {
+        name,
+        description,
+      },
+    })
+
+    return {
+      success: true,
+      data: subject,
+    }
+  } catch (error) {
+    console.error('Error creating subject:', error)
+    return {
+      success: false,
+      error: 'Failed to create subject',
+    }
+  }
+}
+
+export async function updateSubject(
+  id: number,
+  {
+    name,
+    description,
+  }: {
+    name: string
+    description: string
+  }
+) {
+  try {
+    // Check if another subject with the same name exists
+    const existingSubject = await db.subject.findFirst({
+      where: {
+        name,
+        NOT: {
+          id,
+        },
+      },
+    })
+
+    if (existingSubject) {
+      return {
+        success: false,
+        error: 'A subject with this name already exists',
+      }
+    }
+
+    // Update subject
+    const subject = await db.subject.update({
+      where: { id },
+      data: {
+        name,
+        description,
+      },
+    })
+
+    return {
+      success: true,
+      data: subject,
+    }
+  } catch (error) {
+    console.error('Error updating subject:', error)
+    return {
+      success: false,
+      error: 'Failed to update subject',
+    }
+  }
+}
+
+// Function to sync existing users with their role-specific tables
+export async function syncExistingUsers() {
+  try {
+    // Find users who have a role but don't have corresponding role-specific records
+    const users = await db.user.findMany({
+      where: {
+        OR: [
+          {
+            role: 'STUDENT',
+            student: null,
+          },
+          {
+            role: 'TEACHER',
+            teacher: null,
+          },
+          {
+            role: 'ADMIN',
+            admin: null,
+          },
+        ],
+      },
+    })
+
+    const results = await Promise.all(
+      users.map(async (user) => {
+        try {
+          switch (user.role) {
+            case 'STUDENT':
+              // Check if student record doesn't exist
+              const existingStudent = await db.student.findUnique({
+                where: { userId: user.id },
+              })
+              if (!existingStudent) {
+                await db.student.create({
+                  data: { userId: user.id },
+                })
+              }
+              break
+
+            case 'TEACHER':
+              // Check if teacher record doesn't exist
+              const existingTeacher = await db.teacher.findUnique({
+                where: { userId: user.id },
+              })
+              if (!existingTeacher) {
+                await db.teacher.create({
+                  data: {
+                    userId: user.id,
+                    status: 'PENDING',
+                  },
+                })
+              }
+              break
+
+            case 'ADMIN':
+              // Check if admin record doesn't exist
+              const existingAdmin = await db.admin.findUnique({
+                where: { userId: user.id },
+              })
+              if (!existingAdmin) {
+                await db.admin.create({
+                  data: { userId: user.id },
+                })
+              }
+              break
+          }
+          return { success: true, userId: user.id }
+        } catch (error) {
+          return { success: false, userId: user.id, error }
+        }
+      })
+    )
+
+    return {
+      success: true,
+      results,
+      message: 'User synchronization completed',
+    }
+  } catch (error) {
+    console.error('Error syncing users:', error)
+    return {
+      success: false,
+      error: 'Failed to sync users',
+    }
+  }
+}
+
+export async function assignStudentsToTeacher(
+  teacherId: number,
+  studentIds: string[]
+) {
+  try {
+    const result = await db.studentsOnTeachers.createMany({
+      data: studentIds.map((studentId) => ({
+        teacherId,
+        studentId,
+      })),
+      skipDuplicates: true, // Skip if assignment already exists
+    })
+
+    revalidatePath('/admin/teachers')
+    return { success: true, count: result.count }
+  } catch (error) {
+    console.error('Error assigning students to teacher:', error)
+    return { error: 'Failed to assign students to teacher' }
+  }
+}
+
+export async function getUnassignedStudents(teacherId: number) {
+  try {
+    // Get students not assigned to this teacher
+    const students = await db.student.findMany({
+      where: {
+        NOT: {
+          teachers: {
+            some: {
+              teacherId: teacherId,
+            },
+          },
+        },
+      },
+      include: {
+        user: {
+          select: {
+            name: true,
+            email: true,
+          },
+        },
+      },
+    })
+    return { students }
+  } catch (error) {
+    console.error('Error fetching unassigned students:', error)
+    return { error: 'Failed to fetch unassigned students' }
+  }
+}
+
+export async function getTeacherStudents(userId: string) {
+  try {
+    console.log('Finding teacher for userId:', userId)
+
+    // First get the teacher record using the userId
+    const teacher = await db.teacher.findUnique({
+      where: { userId },
+    })
+
+    if (!teacher) {
+      console.log('Teacher not found for userId:', userId)
+      return { error: 'Teacher not found' }
+    }
+
+    console.log('Found teacher with ID:', teacher.id)
+
+    const students = await db.studentsOnTeachers.findMany({
+      where: { teacherId: teacher.id },
+      include: {
+        student: {
+          include: {
+            user: {
+              select: {
+                name: true,
+                email: true,
+              },
+            },
+          },
+        },
+      },
+    })
+
+    if (!students.length) {
+      return { students: [] }
+    }
+
+    const formattedStudents = students.map(({ student, assignedAt }) => ({
+      id: student.id,
+      name: student.user.name,
+      email: student.user.email,
+      assignedAt,
+    }))
+
+    return { students: formattedStudents }
+  } catch (error) {
+    console.error('Error fetching teacher students:', error)
+    return { error: 'Failed to fetch students' }
+  }
+}
+
+export async function getStudentTeachers(studentId: string) {
+  try {
+    console.log('Fetching teachers for student:', studentId)
+
+    // First verify if the student exists
+    const student = await db.student.findUnique({
+      where: { userId: studentId },
+    })
+
+    if (!student) {
+      console.log('Student not found:', studentId)
+      return { error: 'Student not found' }
+    }
+
+    const teacherAssignments = await db.studentsOnTeachers.findMany({
+      where: { studentId: student.id },
+      include: {
+        teacher: {
+          include: {
+            user: {
+              select: {
+                name: true,
+                email: true,
+              },
+            },
+            teacherApplication: {
+              select: {
+                yearsOfExperience: true,
+                preferredAgeGroup: true,
+              },
+            },
+          },
+        },
+      },
+    })
+
+    // console.log(
+    //   'Found teacher assignments:',
+    //   JSON.stringify(teacherAssignments, null, 2)
+    // )
+
+    if (!teacherAssignments.length) {
+      console.log('No teachers found for student:', studentId)
+      return { teachers: [] }
+    }
+
+    const formattedTeachers = teacherAssignments.map(
+      ({ teacher, assignedAt }) => ({
+        id: teacher.id,
+        name: teacher.user.name,
+        email: teacher.user.email,
+        experience: teacher.teacherApplication?.yearsOfExperience,
+        ageGroup: teacher.teacherApplication?.preferredAgeGroup,
+        assignedAt,
+      })
+    )
+
+    // console.log(
+    //   'Formatted teachers:',
+    //   JSON.stringify(formattedTeachers, null, 2)
+    // )
+    return { teachers: formattedTeachers }
+  } catch (error) {
+    console.error('Error fetching student teachers:', error)
     return { error: 'Failed to fetch teachers' }
   }
 }

@@ -12,14 +12,14 @@ import { auth } from '@/lib/auth'
 const middleware = async (req: NextRequest) => {
   const session = await auth()
   const path = req.nextUrl.pathname
-
+  console.log(path)
   // Add debug logging
-  console.log('Middleware Session:', {
-    session,
-    userId: session?.user?.id,
-    userRole: session?.user?.role,
-    path,
-  })
+  // console.log('Middleware Session:', {
+  //   session,
+  //   userId: session?.user?.id,
+  //   userRole: session?.user?.role,
+  //   path,
+  // })
   // Check if it's an admin route and user is not admin
   if (
     (path === '/admin' || path.startsWith('/admin/')) &&

@@ -3,6 +3,7 @@
 import { getTeachers } from '@/action/actions'
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import {
   Table,
   TableBody,
@@ -13,6 +14,8 @@ import {
 } from '@/components/ui/table'
 import { useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
+import { AssignStudentsDialog } from '@/components/teachers/assign-students-dialog'
+import { UserPlus } from 'lucide-react'
 
 type StatusType = 'PENDING' | 'APPROVED' | 'REJECTED' | 'ALL'
 
@@ -22,15 +25,29 @@ const statusColors = {
   REJECTED: 'bg-red-100 text-red-800',
 }
 
+interface Teacher {
+  id: number
+  status: keyof typeof statusColors
+  user: {
+    name: string | null
+    email: string
+  }
+  teacherApplication: {
+    yearsOfExperience: number
+    preferredAgeGroup: string
+  } | null
+  hireDate: Date | null
+}
+
 const ManageTeachers = () => {
   const [selectedStatus, setSelectedStatus] = useState<StatusType>('ALL')
+  const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(null)
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['teachers', selectedStatus],
     queryFn: async () => {
       const status = selectedStatus === 'ALL' ? undefined : selectedStatus
-      /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-      return getTeachers(status as any)
+      return getTeachers(status)
     },
   })
 
@@ -74,20 +91,18 @@ const ManageTeachers = () => {
                 <TableHead>Experience</TableHead>
                 <TableHead>Age Group</TableHead>
                 <TableHead>Hire Date</TableHead>
+                <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-              {teachers.map((teacher: any) => (
+              {teachers.map((teacher: Teacher) => (
                 <TableRow key={teacher.id}>
                   <TableCell>{teacher.user.name}</TableCell>
                   <TableCell>{teacher.user.email}</TableCell>
                   <TableCell>
                     <Badge
                       className={`capitalize ${
-                        statusColors[
-                          teacher.status as keyof typeof statusColors
-                        ] || ''
+                        statusColors[teacher.status] || ''
                       }`}
                     >
                       {teacher.status.toLowerCase()}
@@ -104,11 +119,23 @@ const ManageTeachers = () => {
                       ? new Date(teacher.hireDate).toLocaleDateString()
                       : '-'}
                   </TableCell>
+                  <TableCell>
+                    {teacher.status === 'APPROVED' && (
+                      <Button
+                        variant='outline'
+                        size='sm'
+                        onClick={() => setSelectedTeacher(teacher)}
+                      >
+                        <UserPlus className='h-4 w-4 mr-2' />
+                        Assign Students
+                      </Button>
+                    )}
+                  </TableCell>
                 </TableRow>
               ))}
               {teachers.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={6} className='text-center'>
+                  <TableCell colSpan={7} className='text-center'>
                     No teachers found
                   </TableCell>
                 </TableRow>
@@ -117,6 +144,15 @@ const ManageTeachers = () => {
           </Table>
         )}
       </Card>
+
+      {selectedTeacher && (
+        <AssignStudentsDialog
+          teacherId={selectedTeacher.id}
+          teacherName={selectedTeacher.user.name || 'Unnamed Teacher'}
+          open={!!selectedTeacher}
+          onOpenChange={(open) => !open && setSelectedTeacher(null)}
+        />
+      )}
     </div>
   )
 }

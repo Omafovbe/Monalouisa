@@ -167,7 +167,7 @@ const LandingPage = () => {
   }
 
   return (
-    <div className='min-h-screen bg-goldyellow-400 font-m_reg -mt-20 pt-32 lg:pt-26'>
+    <div className='min-h-screen bg-opal font-m_reg -mt-20 pt-32 lg:pt-26'>
       {/* Hero Section */}
       <motion.div
         className='w-[calc(100%-68px)] max-w-[1320px] mx-auto pl-8 pr-4 pb-12 flex flex-col md:flex-row items-center justify-between'
@@ -179,7 +179,10 @@ const LandingPage = () => {
           className='max-w-xl font-m_bold flex flex-col items-center md:items-start'
           variants={itemVariants}
         >
-          <motion.span className='text-[#967117]' variants={itemVariants}>
+          <motion.span
+            className='text-eastern-blue-400 text-xl'
+            variants={itemVariants}
+          >
             ONLINE LEARNING PLATFORM
           </motion.span>
 
@@ -202,7 +205,7 @@ const LandingPage = () => {
               <motion.span
                 key={`dark-${index}`}
                 variants={wordVariants}
-                className='inline-block mr-[0.5rem] text-[#890620]'
+                className='inline-block mr-[0.5rem] text-korma'
               >
                 {word}
               </motion.span>
@@ -216,7 +219,7 @@ const LandingPage = () => {
           </motion.h1>
 
           <motion.p
-            className='text-[#967117] text-[1.2rem] mb-8'
+            className='text-eastern-blue-400 text-[1.2rem] mb-8'
             variants={itemVariants}
           >
             Take our assessment quiz to help us understand your child&apos;s
@@ -234,7 +237,7 @@ const LandingPage = () => {
               {ageOptions.map((age) => (
                 <button
                   key={age}
-                  className='w-14 h-14 rounded-full border-2 border-goldyellow-300 
+                  className='w-14 h-14 rounded-full border-2 border-eastern-blue-300
                             flex items-center justify-center font-medium relative 
                             overflow-hidden group transition-colors duration-400'
                 >
@@ -242,14 +245,14 @@ const LandingPage = () => {
                     {age}
                   </span>
                   <div
-                    className='absolute bottom-0 left-0 w-full bg-goldyellow-600 
+                    className='absolute bottom-0 left-0 w-full bg-eastern-blue
                                 transition-all duration-300 ease-out
                                 h-0 group-hover:h-full'
                   />
                 </button>
               ))}
               <button
-                className='w-14 h-14 rounded-full border-2 border-goldyellow-300 
+                className='w-14 h-14 rounded-full border-2 border-eastern-blue-300 
                           flex items-center justify-center font-medium relative 
                           overflow-hidden group transition-colors duration-300'
               >
@@ -257,7 +260,7 @@ const LandingPage = () => {
                   13+
                 </span>
                 <div
-                  className='absolute bottom-0 left-0 w-full bg-goldyellow-600 
+                  className='absolute bottom-0 left-0 w-full bg-eastern-blue 
                               transition-all duration-300 ease-out
                               h-0 group-hover:h-full'
                 />
