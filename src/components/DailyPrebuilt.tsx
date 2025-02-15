@@ -22,7 +22,7 @@ export default function DailyPrebuilt({
   roomUrl,
   roomName,
   token,
-  userName = 'Student',
+  userName = 'Guest',
 }: DailyPrebuiltProps) {
   const iframeRef = useRef<HTMLDivElement>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -72,15 +72,15 @@ export default function DailyPrebuilt({
           showLeaveButton: true,
           showFullscreenButton: true,
           userName: userName,
-          theme: {
-            colors: {
-              accent: '#ffcb05',
-              accentText: '#1a1a1a',
-              background: '#ffffff',
-              backgroundAccent: '#fff3d6',
-              baseText: '#2d2d2d',
-            },
-          },
+          // theme: {
+          //   colors: {
+          //     accent: '#ffcb05',
+          //     accentText: '#1a1a1a',
+          //     background: '#ffffff',
+          //     backgroundAccent: '#fff3d6',
+          //     baseText: '#2d2d2d',
+          //   },
+          // },
           iframeStyle: {
             width: '100%',
             height: '100%',

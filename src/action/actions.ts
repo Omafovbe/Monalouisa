@@ -77,7 +77,7 @@ export async function registerUser(
 
     return { success: true, user: result }
   } catch (error) {
-    console.error('Error creating user:', error)
+    console.log('Error creating user:', error)
     return { error: 'Error creating user', status: 'error' }
   }
 }
@@ -594,7 +594,7 @@ export async function getTeacherStudents(userId: string) {
       email: student.user.email,
       assignedAt,
     }))
-
+    console.log('Formatted students:', formattedStudents)
     return { students: formattedStudents }
   } catch (error) {
     console.error('Error fetching teacher students:', error)
@@ -667,5 +667,266 @@ export async function getStudentTeachers(studentId: string) {
   } catch (error) {
     console.error('Error fetching student teachers:', error)
     return { error: 'Failed to fetch teachers' }
+  }
+}
+
+// Get teacher's schedule
+export async function getTeacherSchedule(userId: string) {
+  try {
+    const teacher = await db.teacher.findUnique({
+      where: { userId },
+      select: { id: true, userId: true },
+    })
+
+    if (!teacher) {
+      return { error: 'Teacher not found', schedules: [] }
+    }
+
+    const schedules = await db.schedule.findMany({
+      where: {
+        teacherId: teacher.userId,
+      },
+      include: {
+        student: {
+          select: {
+            user: {
+              select: {
+                name: true,
+                email: true,
+              },
+            },
+          },
+        },
+        subject: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    })
+
+    return {
+      schedules: schedules.map((schedule) => ({
+        id: schedule.id,
+        title: `${schedule.title} - ${
+          schedule.student.user.name || schedule.student.user.email
+        }`,
+        start: schedule.startTime,
+        end: schedule.endTime,
+        studentId: schedule.studentId,
+        subjectId: schedule.subjectId,
+        studentName: schedule.student.user.name || schedule.student.user.email,
+        subjectName: schedule.subject.name,
+      })),
+    }
+  } catch (error) {
+    console.error('Error in getTeacherSchedule:', error)
+    return { error: 'Failed to fetch schedules', schedules: [] }
+  }
+}
+
+// Unified function to create or update a schedule
+export async function upsertSchedule({
+  scheduleId,
+  teacherId,
+  studentId,
+  subjectId,
+  startTime,
+  endTime,
+  title = 'Class Session',
+}: {
+  scheduleId?: number
+  teacherId: string
+  studentId?: string
+  subjectId?: number
+  startTime: Date
+  endTime: Date
+  title?: string
+}) {
+  try {
+    // Check for time slot conflicts, excluding the current schedule if updating
+    const existingSchedule = await db.schedule.findFirst({
+      where: {
+        teacherId,
+        ...(scheduleId && { id: { not: scheduleId } }), // Exclude current schedule if updating
+        OR: [
+          {
+            startTime: { lt: endTime },
+            endTime: { gt: startTime },
+          },
+        ],
+      },
+    })
+
+    if (existingSchedule) {
+      return {
+        error: scheduleId
+          ? 'This time slot conflicts with another schedule. Please choose a different time.'
+          : 'This time slot is already taken. Please choose a different time.',
+      }
+    }
+
+    // If updating, verify the schedule exists and belongs to the teacher
+    if (scheduleId) {
+      const existingSchedule = await db.schedule.findFirst({
+        where: {
+          id: scheduleId,
+          teacherId,
+        },
+      })
+
+      if (!existingSchedule) {
+        return { error: 'Schedule not found or unauthorized' }
+      }
+    }
+
+    // Prepare the data for upsert
+    // const data = {
+    //   teacherId,
+    //   startTime,
+    //   endTime,
+    //   title,
+    //   ...(studentId && { studentId }), // Only include if provided (needed for creation)
+    //   ...(subjectId && { subjectId }), // Only include if provided (needed for creation)
+    // }
+
+    // Perform upsert operation
+    const schedule = await db.schedule.upsert({
+      where: {
+        id: scheduleId || -1, // Use -1 for creation (will never match)
+      },
+      create: {
+        teacherId,
+        studentId: studentId!, // Required for creation
+        subjectId: subjectId!, // Required for creation
+        startTime,
+        endTime,
+        title,
+      },
+      update: {
+        subjectId,
+        startTime,
+        endTime,
+        title,
+      },
+      include: {
+        student: {
+          select: {
+            user: {
+              select: {
+                name: true,
+                email: true,
+              },
+            },
+          },
+        },
+        subject: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    })
+
+    return {
+      schedule: {
+        ...schedule,
+        studentName: schedule.student.user.name || schedule.student.user.email,
+        subjectName: schedule.subject.name,
+      },
+    }
+  } catch (error) {
+    console.error('Error in upsertSchedule:', error)
+    return { error: 'Failed to save schedule' }
+  }
+}
+
+// Delete a schedule (keeping this separate as it's a different operation)
+export async function deleteSchedule(scheduleId: number, userId: string) {
+  try {
+    const teacher = await db.teacher.findUnique({
+      where: { userId },
+      select: { id: true, userId: true },
+    })
+
+    if (!teacher) {
+      return { error: 'Teacher not found' }
+    }
+
+    // Check if schedule exists and belongs to teacher
+    const existingSchedule = await db.schedule.findFirst({
+      where: {
+        id: scheduleId,
+        teacherId: teacher.userId,
+      },
+    })
+
+    if (!existingSchedule) {
+      return { error: 'Schedule not found' }
+    }
+
+    await db.schedule.delete({
+      where: { id: scheduleId },
+    })
+
+    return { success: true }
+  } catch (error) {
+    console.error('Error in deleteSchedule:', error)
+    return { error: 'Failed to delete schedule' }
+  }
+}
+
+// Get student's schedule
+export async function getStudentSchedule(userId: string) {
+  try {
+    const student = await db.student.findUnique({
+      where: { userId },
+      select: { id: true },
+    })
+
+    if (!student) {
+      return { error: 'Student not found', schedules: [] }
+    }
+
+    const schedules = await db.schedule.findMany({
+      where: {
+        studentId: student.id,
+      },
+      include: {
+        teacher: {
+          select: {
+            user: {
+              select: {
+                name: true,
+                email: true,
+              },
+            },
+          },
+        },
+        subject: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    })
+
+    return {
+      schedules: schedules.map((schedule) => ({
+        id: schedule.id,
+        title: `${schedule.title} - ${
+          schedule.teacher.user.name || schedule.teacher.user.email
+        }`,
+        start: schedule.startTime,
+        end: schedule.endTime,
+        teacherId: schedule.teacherId,
+        subjectId: schedule.subjectId,
+        teacherName: schedule.teacher.user.name || schedule.teacher.user.email,
+        subjectName: schedule.subject.name,
+      })),
+    }
+  } catch (error) {
+    console.error('Error in getStudentSchedule:', error)
+    return { error: 'Failed to fetch schedules', schedules: [] }
   }
 }

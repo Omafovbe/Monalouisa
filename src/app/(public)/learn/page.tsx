@@ -18,7 +18,7 @@ export default function Learn2Page() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          roomName: `class-${Date.now()}`,
+          roomName: `mlt-${Date.now()}`,
         }),
       })
 

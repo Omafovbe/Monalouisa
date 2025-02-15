@@ -52,7 +52,7 @@ const teacherMenuItems: MenuItem[] = [
     icon: <BookOpen className='h-4 w-4 mr-2' />,
   },
   {
-    href: '/teacher/video-call',
+    href: '/teacher/live-class',
     label: 'Video Session',
     icon: <MessageSquare className='h-4 w-4 mr-2' />,
   },
@@ -108,7 +108,7 @@ export function Sidebar({ className }: React.HTMLAttributes<HTMLDivElement>) {
 
   // Get the appropriate menu items based on user role
   const menuItems =
-    session?.user?.role === 'TEACHER' ? teacherMenuItems : studentMenuItems
+    session?.user?.role === 'STUDENT' ? studentMenuItems : teacherMenuItems
 
   return (
     <div

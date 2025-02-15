@@ -30,7 +30,15 @@ export default function RegisterPage() {
     setError(null)
 
     try {
-      await registerUser(formData.email, formData.password, formData.name)
+      // if (formData.email === 'me@test.com') {
+      //   formData.role = 'ADMIN' as 'ADMIN'
+      // }
+      await registerUser(
+        formData.email,
+        formData.password,
+        formData.name,
+        formData.role as 'STUDENT' | 'ADMIN' | 'TEACHER'
+      )
       router.push('/login')
     } catch (err) {
       console.error(err)

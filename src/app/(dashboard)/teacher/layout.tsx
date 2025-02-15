@@ -11,6 +11,9 @@ export default function TeacherLayout({
   children: React.ReactNode
 }) {
   const { data: session } = useSession()
+  if (!session) {
+    redirect('/login')
+  }
   if (session?.user?.role === 'STUDENT') {
     redirect('/student')
   }
