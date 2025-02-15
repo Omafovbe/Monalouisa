@@ -136,7 +136,6 @@ export default function SchedulePage() {
     start: Date
     end: Date
     /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-
     resource?: any // Optional, include if your slots have resources
   }) => {
     setSelectedSlot(slotInfo)
