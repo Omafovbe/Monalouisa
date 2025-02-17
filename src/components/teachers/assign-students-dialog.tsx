@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   assignStudentsToTeacher,
   getUnassignedStudents,
-} from '@/action/actions'
+} from '@/actions/actions'
 import {
   Dialog,
   DialogContent,

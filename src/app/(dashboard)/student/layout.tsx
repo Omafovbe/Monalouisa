@@ -17,12 +17,13 @@ export default function StudentLayout({
   return (
     <SidebarProvider>
       <div className='flex h-screen overflow-hidden'>
-        {/* Sidebar - full on desktop, collapsible on mobile */}
-        <div className='fixed md:relative md:flex flex-col border-r transition-all duration-300 ease-in-out'>
+        {/* Sidebar - fixed on all screen sizes */}
+        <div className='fixed md:relative md:flex flex-col border-r transition-all duration-300 ease-in-out inset-y-0 z-50'>
           <Sidebar className='h-full' />
         </div>
 
-        {children}
+        {/* Main content - scrollable */}
+        <div className='flex-1 overflow-auto'>{children}</div>
       </div>
     </SidebarProvider>
   )

@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/card'
 import { ScheduleTable } from '@/components/dashboard/schedule-table'
 import { useQuery } from '@tanstack/react-query'
-import { getTeacherStudents } from '@/action/actions'
+import { getTeacherStudents } from '@/actions/actions'
 import { useSession } from 'next-auth/react'
 
 import { useToast } from '@/hooks/use-toast'

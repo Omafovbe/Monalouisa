@@ -33,7 +33,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form'
-import { addSubject, getSubjects, updateSubject } from '@/action/actions'
+import { addSubject, getSubjects, updateSubject } from '@/actions/actions'
 import React from 'react'
 
 const subjectSchema = z.object({

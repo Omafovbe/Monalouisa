@@ -1,6 +1,6 @@
 'use client'
 
-import { getTeachers } from '@/action/actions'
+import { getTeachers } from '@/actions/actions'
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'

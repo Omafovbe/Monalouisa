@@ -1,3 +1,6 @@
+import { Suspense } from 'react'
+import { Spinner } from '@/components/ui/spinner'
+import { ScheduleTable } from '@/components/dashboard/schedule-table'
 // import { AppSidebar } from '@/components/app-sidebar'
 import {
   Breadcrumb,
@@ -6,7 +9,13 @@ import {
   BreadcrumbPage,
 } from '@/components/ui/breadcrumb'
 import { Separator } from '@/components/ui/separator'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Calendar, MoreVertical, TrendingUp, Plus } from 'lucide-react'
@@ -128,36 +137,31 @@ const Page = async () => {
         </div>
 
         {/* Management Links Section */}
-        <div className='grid gap-4 md:grid-cols-3'>
+        <div className='grid gap-4 md:grid-cols-2'>
           <Card>
             <CardHeader>
-              <CardTitle>Manage Teachers</CardTitle>
+              <CardTitle>Teachers Dashboard</CardTitle>
+              <CardDescription>
+                See the teacher and their classes
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              <Link href='/admin/manage-teachers'>
-                <Button className='w-full'>Go to Manage Teachers</Button>
+              <Link href='/teacher' target='_blank'>
+                <Button className='w-full'>Go to Teachers Dashboard</Button>
               </Link>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader>
-              <CardTitle>Manage Students</CardTitle>
+              <CardTitle>Students Dashboard</CardTitle>
+              <CardDescription>
+                See the student and their classes
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              <Link href='/admin/manage-students'>
-                <Button className='w-full'>Go to Manage Students</Button>
-              </Link>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Manage Subjects</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Link href='/admin/manage-subjects'>
-                <Button className='w-full'>Go to Manage Subjects</Button>
+              <Link href='/student' target='_blank'>
+                <Button className='w-full'>Go to Students Dashboard</Button>
               </Link>
             </CardContent>
           </Card>
@@ -166,7 +170,7 @@ const Page = async () => {
         {/* Appointments Section */}
         <Card>
           <CardHeader className='flex flex-row items-center justify-between'>
-            <CardTitle>Upcoming Appointments</CardTitle>
+            <CardTitle>Appointments</CardTitle>
             <div className='flex items-center gap-2'>
               <div className='flex w-full max-w-sm items-center gap-2'>
                 <Input
@@ -174,77 +178,13 @@ const Page = async () => {
                   className='h-9'
                   type='search'
                 />
-                <Select defaultValue='all'>
-                  <SelectTrigger className='h-9 w-[130px]'>
-                    <SelectValue placeholder='Select status' />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value='all'>All Status</SelectItem>
-                    <SelectItem value='scheduled'>Scheduled</SelectItem>
-                    <SelectItem value='completed'>Completed</SelectItem>
-                    <SelectItem value='cancelled'>Cancelled</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Button size='sm' className='h-9'>
-                  <Plus className='mr-2 h-4 w-4' />
-                  New
-                </Button>
               </div>
             </div>
           </CardHeader>
           <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Student</TableHead>
-                  <TableHead>Subject</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Date & Time</TableHead>
-                  <TableHead>Duration</TableHead>
-                  <TableHead></TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                <TableRow>
-                  <TableCell className='flex items-center gap-2'>
-                    <Avatar className='h-8 w-8'>
-                      <AvatarImage src='/avatars/01.png' alt='Student' />
-                      <AvatarFallback>JS</AvatarFallback>
-                    </Avatar>
-                    <div className='flex flex-col'>
-                      <span>John Smith</span>
-                      <span className='text-sm text-muted-foreground'>
-                        Grade 10
-                      </span>
-                    </div>
-                  </TableCell>
-                  <TableCell>Mathematics</TableCell>
-                  <TableCell>
-                    <Badge
-                      variant='outline'
-                      className='bg-green-50 text-green-700 border-green-200'
-                    >
-                      Scheduled
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className='flex flex-col'>
-                      <span>Today, 2:00 PM</span>
-                      <span className='text-sm text-muted-foreground'>
-                        45 minutes left
-                      </span>
-                    </div>
-                  </TableCell>
-                  <TableCell>60 min</TableCell>
-                  <TableCell>
-                    <Button variant='ghost' size='sm'>
-                      View Details
-                    </Button>
-                  </TableCell>
-                </TableRow>
-                {/* Add more appointment rows as needed */}
-              </TableBody>
-            </Table>
+            <Suspense fallback={<Spinner />}>
+              <ScheduleTable />
+            </Suspense>
           </CardContent>
         </Card>
       </div>

@@ -1,6 +1,6 @@
 'use client'
 
-import { getTeacherApplications } from '@/action/actions'
+import { getTeacherApplications } from '@/actions/actions'
 import { useQuery } from '@tanstack/react-query'
 import { Spinner } from '@/components/ui/spinner'
 import {

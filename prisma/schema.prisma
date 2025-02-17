@@ -130,6 +130,7 @@ model Student {
     updatedAt   DateTime             @updatedAt
 
     StudentsOnSubjects StudentsOnSubjects[]
+    subscription       Subscription?
 }
 
 model Admin {
@@ -221,4 +222,19 @@ model StudentsOnSubjects {
     enrolledAt DateTime @default(now())
 
     @@id([studentId, subjectId])
+}
+
+model Subscription {
+    id                   String   @id @default(cuid())
+    studentId            String   @unique
+    packageName          String
+    billingType          String
+    status               String
+    stripeCustomerId     String?
+    stripeSubscriptionId String?
+    createdAt            DateTime @default(now())
+    updatedAt            DateTime @updatedAt
+    student              Student  @relation(fields: [studentId], references: [id])
+
+    @@index([stripeSubscriptionId])
 }

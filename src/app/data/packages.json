@@ -28,7 +28,7 @@
     },
     {
       "packageName": "Intermediate Package",
-      "monthlyCost": "94.99 - 124.99 dirhams",
+      "monthlyCost": "94.99 - 124.99",
       "numberOfLessons": "10 Lessons",
       "lessonDuration": "45 minutes",
       "billingOptions": [

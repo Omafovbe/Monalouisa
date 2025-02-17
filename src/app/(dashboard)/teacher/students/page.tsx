@@ -1,5 +1,5 @@
 'use client'
-import { getTeacherStudents } from '@/action/actions'
+import { getTeacherStudents } from '@/actions/actions'
 import {
   Card,
   CardHeader,

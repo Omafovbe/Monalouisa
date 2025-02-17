@@ -1,7 +1,7 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
-import { getStudentTeachers } from '@/action/actions'
+import { getStudentTeachers } from '@/actions/actions'
 import { useSession } from 'next-auth/react'
 import { Card } from '@/components/ui/card'
 import {

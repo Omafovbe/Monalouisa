@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { getSubjects } from '@/action/actions'
+import { getSubjects } from '@/actions/actions'
 import { auth } from '@/lib/auth'
 
 export async function GET() {

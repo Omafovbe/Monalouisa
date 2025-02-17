@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { useSession } from 'next-auth/react'
-import { getStudentSchedule } from '@/action/actions'
+import { getStudentSchedule } from '@/actions/actions'
 
 export interface Schedule {
   id: number

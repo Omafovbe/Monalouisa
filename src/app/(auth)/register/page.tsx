@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { registerUser } from '@/action/actions'
+import { registerUser } from '@/actions/actions'
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({

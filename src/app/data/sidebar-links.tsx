@@ -42,6 +42,11 @@ export const sidebarLinks: SidebarGroup[] = [
         href: '/admin/students',
       },
       {
+        label: 'Users',
+        icon: <Users className='h-4 w-4' />,
+        href: '/admin/users',
+      },
+      {
         label: 'Applications',
         icon: <FileText className='h-4 w-4' />,
         href: '/admin/applications',

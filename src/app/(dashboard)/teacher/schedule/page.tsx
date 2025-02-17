@@ -242,8 +242,8 @@ export default function SchedulePage() {
 
   if (isLoading) {
     return (
-      <div className='h-full flex items-center justify-center'>
-        <Spinner size={32} />
+      <div className='container mx-auto h-full flex items-center justify-center'>
+        <Spinner size={60} />
       </div>
     )
   }
@@ -274,7 +274,7 @@ export default function SchedulePage() {
             formats={formats}
             popup
             step={30}
-            timeslots={4}
+            timeslots={2}
             toolbar={true}
           />
         </CardContent>

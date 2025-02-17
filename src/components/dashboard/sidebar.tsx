@@ -21,7 +21,7 @@ import {
   BookOpenCheck,
   CreditCard,
 } from 'lucide-react'
-import { useSession } from 'next-auth/react'
+import { useSession, signOut } from 'next-auth/react'
 import { usePathname } from 'next/navigation'
 
 interface MenuItem {
@@ -149,7 +149,7 @@ export function Sidebar({ className }: React.HTMLAttributes<HTMLDivElement>) {
         <div className='px-3 py-2'>
           <div className='flex items-center px-2 mb-8'>
             <BookOpen className='h-6 w-6 text-amber-500' />
-            <h2 className='ml-2 text-lg font-semibold'>EduTeach</h2>
+            <h2 className='ml-2 text-lg font-semibold'>Monalouisa Teaches</h2>
           </div>
 
           {/* Navigation Links */}
@@ -208,6 +208,7 @@ export function Sidebar({ className }: React.HTMLAttributes<HTMLDivElement>) {
           <Button
             variant='ghost'
             className='w-full justify-start text-red-500 hover:text-red-600 hover:bg-red-50'
+            onClick={() => signOut()}
           >
             <LogOut className='h-4 w-4 mr-2' />
             Log Out

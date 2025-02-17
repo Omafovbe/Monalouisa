@@ -2,7 +2,7 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
-import { getStudents, syncExistingUsers } from '@/action/actions'
+import { getStudents, syncExistingUsers } from '@/actions/actions'
 import {
   Table,
   TableBody,

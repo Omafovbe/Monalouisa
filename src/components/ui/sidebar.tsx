@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Settings, LogOut, ChevronLeft, ChevronRight } from 'lucide-react'
 import { sidebarLinks } from '@/app/data/sidebar-links'
+import { signOut } from 'next-auth/react'
 
 // Define types
 type SidebarContextType = {
@@ -65,7 +66,7 @@ export function Sidebar({
             isCollapsed && 'scale-0 w-0 opacity-0'
           )}
         >
-          Monaloiusa Teaches
+          Monalouisa Teaches
         </h1>
         <button
           onClick={toggleSidebar}
@@ -151,6 +152,7 @@ export function Sidebar({
               'transition-all duration-300 ease-in-out min-w-[40px]',
               isCollapsed ? 'justify-center' : 'justify-start'
             )}
+            onClick={() => signOut()}
           >
             <LogOut className='h-4 w-4 min-w-[16px]' />
             <span

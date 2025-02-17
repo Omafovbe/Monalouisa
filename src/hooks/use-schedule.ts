@@ -7,7 +7,7 @@ import {
   deleteSchedule,
   getSubjects,
   getTeacherStudents,
-} from '@/action/actions'
+} from '@/actions/actions'
 
 export interface Schedule {
   id: number

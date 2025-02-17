@@ -9,7 +9,7 @@ import { useSession, signIn } from 'next-auth/react'
 import { useState } from 'react'
 import { Spinner } from '@/components/ui/spinner'
 import { useToast } from '@/hooks/use-toast'
-import { executeAction } from '@/action/executeAction'
+import { executeAction } from '@/actions/executeAction'
 
 export default function LoginPage() {
   const router = useRouter()

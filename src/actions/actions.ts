@@ -930,3 +930,55 @@ export async function getStudentSchedule(userId: string) {
     return { error: 'Failed to fetch schedules', schedules: [] }
   }
 }
+
+export async function getAllSchedules() {
+  try {
+    const schedules = await db.schedule.findMany({
+      include: {
+        student: {
+          include: {
+            user: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
+        teacher: {
+          include: {
+            user: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
+        subject: {
+          select: {
+            name: true,
+          },
+        },
+      },
+      orderBy: {
+        startTime: 'asc',
+      },
+    })
+
+    return {
+      schedules: schedules.map((schedule) => ({
+        id: schedule.id,
+        title: schedule.title,
+        start: schedule.startTime,
+        end: schedule.endTime,
+        studentId: schedule.studentId,
+        teacherId: schedule.teacherId,
+        subjectId: schedule.subjectId,
+        studentName: schedule.student.user.name || 'Unnamed Student',
+        teacherName: schedule.teacher.user.name || 'Unnamed Teacher',
+        subjectName: schedule.subject.name,
+      })),
+    }
+  } catch (error) {
+    return { error: 'Failed to fetch schedules' }
+  }
+}
