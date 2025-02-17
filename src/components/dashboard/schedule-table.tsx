@@ -18,18 +18,18 @@ import { Button } from '@/components/ui/button'
 import { useState, useMemo } from 'react'
 import { ChevronLeft, ChevronRight, Search } from 'lucide-react'
 
-interface Schedule {
-  id: number
-  title: string
-  start: Date
-  end: Date
-  studentId: string
-  teacherId: string
-  subjectId: number
-  studentName: string
-  teacherName: string
-  subjectName: string
-}
+// interface Schedule {
+//   id: number
+//   title: string
+//   start: Date
+//   end: Date
+//   studentId: string
+//   teacherId: string
+//   subjectId: number
+//   studentName: string
+//   teacherName: string
+//   subjectName: string
+// }
 
 export function ScheduleTable() {
   const [searchQuery, setSearchQuery] = useState('')

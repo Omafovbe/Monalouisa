@@ -979,6 +979,7 @@ export async function getAllSchedules() {
       })),
     }
   } catch (error) {
+    console.log('error', error)
     return { error: 'Failed to fetch schedules' }
   }
 }

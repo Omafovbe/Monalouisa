@@ -1,7 +1,7 @@
 'use client'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Users, Clock, GraduationCap, TrendingUp } from 'lucide-react'
+import { Clock, GraduationCap, TrendingUp } from 'lucide-react'
 
 export function OverviewCards() {
   return (

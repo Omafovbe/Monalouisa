@@ -27,6 +27,7 @@ export async function getAdmins() {
     console.log('admins', admins)
     return { admins }
   } catch (error) {
+    console.log('error', error)
     return { error: 'Failed to fetch admin users' }
   }
 }
@@ -49,6 +50,7 @@ export async function getAdminById(id: string) {
     })
     return { admin }
   } catch (error) {
+    console.log('error', error)
     return { error: 'Failed to fetch admin user' }
   }
 }
@@ -80,6 +82,7 @@ export async function createAdmin(data: z.infer<typeof createAdminSchema>) {
 
     return { success: 'Admin created successfully', userId: user.id }
   } catch (error) {
+    console.log('error', error)
     return { error: 'Failed to create admin user' }
   }
 }
@@ -118,6 +121,7 @@ export async function updateAdmin(
 
     return { success: 'Admin updated successfully' }
   } catch (error) {
+    console.log('error', error)
     return { error: 'Failed to update admin user' }
   }
 }
@@ -147,6 +151,7 @@ export async function changeAdminPassword(
 
     return { success: 'Password changed successfully' }
   } catch (error) {
+    console.log('error', error)
     return { error: 'Failed to change password' }
   }
 }
@@ -160,6 +165,7 @@ export async function deleteAdmin(id: string) {
 
     return { success: 'Admin deleted successfully' }
   } catch (error) {
+    console.log('error', error)
     return { error: 'Failed to delete admin user' }
   }
 }

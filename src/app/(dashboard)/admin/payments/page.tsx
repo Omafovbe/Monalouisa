@@ -83,6 +83,7 @@ export default function PaymentsPage() {
       return result
     },
   })
+  console.log('selectedPayment', selectedPayment)
 
   const getStatusColor = (status: string) => {
     switch (status) {

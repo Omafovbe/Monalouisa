@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+// import { useRouter } from 'next/navigation'
 import {
   Table,
   TableBody,
@@ -57,7 +57,7 @@ export default function AdminUsersPage() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [selectedAdmin, setSelectedAdmin] = useState<Admin | null>(null)
-  const router = useRouter()
+  //   const router = useRouter()
   const { toast } = useToast()
   const queryClient = useQueryClient()
 

@@ -39,20 +39,20 @@ interface Package {
   }>
 }
 
-interface Subscription {
-  id: string
-  studentId: string
-  packageName: string
-  billingType: string
-  status: string
-  stripeCustomerId: string | null
-  stripeSubscriptionId: string | null
-}
+// interface Subscription {
+//   id: string
+//   studentId: string
+//   packageName: string
+//   billingType: string
+//   status: string
+//   stripeCustomerId: string | null
+//   stripeSubscriptionId: string | null
+// }
 
-interface SubscriptionResponse {
-  status: string
-  subscription: Subscription | null
-}
+// interface SubscriptionResponse {
+//   status: string
+//   subscription: Subscription | null
+// }
 
 interface SubscriptionDetails {
   currentPeriodEnd: Date
@@ -108,6 +108,7 @@ export default function PaymentsPage() {
             }
           })
           .catch((error) => {
+            console.log('error', error)
             toast({
               title: 'Error',
               description: 'Failed to process payment',
@@ -133,7 +134,7 @@ export default function PaymentsPage() {
   const {
     data: subscriptionData,
     isLoading: isLoadingSubscription,
-    error: subscriptionError,
+    // error: subscriptionError,
   } = useQuery({
     queryKey: ['subscription', session?.user?.id],
     queryFn: async () => {
