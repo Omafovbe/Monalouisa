@@ -89,12 +89,16 @@ export async function createCheckoutSession(
       },
     })
 
-    // After successful session creation, update the subscription with session ID
-    if (session.id) {
+    // After successful session creation, update the subscription with subscription ID
+    if (session.subscription) {
+      const subscriptionId =
+        typeof session.subscription === 'string'
+          ? session.subscription
+          : session.subscription.id
       await db.subscription.update({
         where: { studentId: student.id },
         data: {
-          stripeSubscriptionId: session.id,
+          stripeSubscriptionId: subscriptionId,
         },
       })
     }
@@ -180,7 +184,6 @@ function getPriceId(packageName: string, billingType: string): string {
 }
 
 export async function getSubscription(userId: string) {
-  console.log(userId)
   if (!userId) {
     return {
       status: 'NO_SUBSCRIPTION',

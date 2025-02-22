@@ -14,8 +14,8 @@ import {
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Spinner } from '@/components/ui/spinner'
-import { Check, CreditCard } from 'lucide-react'
-import packages from '@/app/data/packages.json'
+import { Check } from 'lucide-react'
+import { cn } from '@/lib/utils'
 import {
   getSubscription,
   createCheckoutSession,
@@ -26,32 +26,23 @@ import {
 import { useRouter, useSearchParams } from 'next/navigation'
 import { toast } from '@/hooks/use-toast'
 import { format } from 'date-fns'
-
-interface Package {
-  packageName: string
-  monthlyCost: string
-  numberOfLessons: string
-  lessonDuration: string
-  billingOptions: Array<{
-    type: string
-    discounts: string
-    benefits: string[]
-  }>
-}
+import packagesData from '@/app/data/packages.json'
 
 // interface Subscription {
 //   id: string
+//   status: string
+//   createdAt: Date
+//   updatedAt: Date
 //   studentId: string
 //   packageName: string
 //   billingType: string
-//   status: string
 //   stripeCustomerId: string | null
 //   stripeSubscriptionId: string | null
 // }
 
 // interface SubscriptionResponse {
-//   status: string
 //   subscription: Subscription | null
+//   error?: string
 // }
 
 interface SubscriptionDetails {
@@ -73,6 +64,7 @@ export default function PaymentsPage() {
   const { data: session } = useSession()
   const [selectedPackage, setSelectedPackage] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [isCanceling, setIsCanceling] = useState(false)
   const searchParams = useSearchParams()
   const queryClient = useQueryClient()
 
@@ -144,57 +136,135 @@ export default function PaymentsPage() {
     enabled: !!session?.user?.id,
   })
 
-  const hasActiveSubscription = Boolean(
-    subscriptionData?.status === 'HAS_SUBSCRIPTION' &&
-      subscriptionData?.subscription
-  )
+  // const hasActiveSubscription = Boolean(
+  //   subscriptionData?.status === 'HAS_SUBSCRIPTION' &&
+  //     subscriptionData?.subscription
+  // )
   const currentSubscription = subscriptionData?.subscription
   console.log('subscriptionData', currentSubscription)
 
   // Add new state and query for subscription details
-  const [isCanceling, setIsCanceling] = useState(false)
-
-  const { data: subscriptionDetails, isLoading: isLoadingDetails } = useQuery({
+  const {
+    data: subscriptionDetails,
+    // isLoading: isLoadingDetails,
+    error: subscriptionDetailsError,
+  } = useQuery({
     queryKey: [
       'subscription-details',
       currentSubscription?.stripeSubscriptionId,
     ],
     queryFn: async () => {
-      if (!currentSubscription?.stripeSubscriptionId) {
-        throw new Error('No subscription ID')
-      }
-      const result = await getSubscriptionDetails(
-        currentSubscription.stripeSubscriptionId
+      console.log(
+        'Fetching subscription details for ID:',
+        currentSubscription?.stripeSubscriptionId
       )
-      if (result.error) {
-        throw new Error(result.error)
+
+      if (!currentSubscription?.stripeSubscriptionId) {
+        console.error('No subscription ID available')
+        throw new Error('No subscription ID available')
       }
-      return result as SubscriptionDetailsResponse
+
+      try {
+        const result = await getSubscriptionDetails(
+          currentSubscription.stripeSubscriptionId
+        )
+
+        console.log('Subscription details result:', result)
+
+        if (result.error) {
+          console.error('Error from getSubscriptionDetails:', result.error)
+          throw new Error(result.error)
+        }
+
+        if (!result.success || !result.details) {
+          console.error('Invalid response format:', result)
+          throw new Error('Invalid response format from subscription details')
+        }
+
+        return result as SubscriptionDetailsResponse
+      } catch (error) {
+        console.error('Error fetching subscription details:', error)
+        throw error
+      }
     },
     enabled: !!currentSubscription?.stripeSubscriptionId,
+    retry: 1, // Only retry once on failure
   })
+
+  // Add error display in the UI
+  useEffect(() => {
+    if (subscriptionDetailsError) {
+      toast({
+        title: 'Error',
+        description:
+          subscriptionDetailsError instanceof Error
+            ? subscriptionDetailsError.message
+            : 'Failed to fetch subscription details',
+        variant: 'destructive',
+      })
+    }
+  }, [subscriptionDetailsError])
+
+  // Transform packages data for display
+  const packages = packagesData.packages.map((pkg) => ({
+    packageName: pkg.packageName,
+    plans: [
+      {
+        name: 'Standard',
+        price: parseFloat(pkg.monthlyCost.split(' - ')[0]),
+        interval: 'month',
+        features: pkg.billingOptions[0].benefits,
+        isPopular: pkg.packageName === 'Intermediate Package',
+      },
+      {
+        name: 'Premium',
+        price: parseFloat(pkg.monthlyCost.split(' - ')[1]),
+        interval: 'month',
+        features: pkg.billingOptions[1].benefits,
+        isPopular: pkg.packageName === 'Intermediate Package',
+      },
+    ],
+  }))
 
   const handleUpgrade = async (packageName: string, billingType: string) => {
     try {
+      if (!session?.user?.id) {
+        toast({
+          title: 'Error',
+          description: 'Please sign in to upgrade your subscription',
+          variant: 'destructive',
+        })
+        return
+      }
+
       setIsLoading(true)
       setSelectedPackage(packageName)
 
-      if (!session?.user?.id) {
-        throw new Error('User not authenticated')
-      }
+      console.log('Creating checkout session for:', {
+        userId: session.user.id,
+        packageName,
+        billingType,
+      })
 
       const result = await createCheckoutSession(
         session.user.id,
         packageName,
-        billingType
+        billingType.toLowerCase()
       )
 
-      console.log('result', result)
+      console.log('Checkout session result:', result)
+
+      if (result.error) {
+        throw new Error(result.error)
+      }
 
       if (result.url) {
         window.location.href = result.url
+      } else {
+        throw new Error('No checkout URL received')
       }
     } catch (error) {
+      console.error('Error in handleUpgrade:', error)
       toast({
         title: 'Error',
         description:
@@ -254,193 +324,149 @@ export default function PaymentsPage() {
   }
 
   return (
-    <div className='container mx-auto p-6 pb-20'>
-      <div className='flex flex-col gap-4 mb-8'>
-        <h1 className='text-3xl font-bold'>Subscription & Payments</h1>
+    <div className='container mx-auto py-10'>
+      <div className='space-y-6'>
+        <div className='text-center space-y-2'>
+          <h1 className='text-3xl font-bold'>Choose Your Plan</h1>
+          <p className='text-muted-foreground'>
+            Select the perfect learning package for your needs
+          </p>
+        </div>
 
-        {/* <pre>{JSON.stringify(subscriptionData, null, 2)}</pre> */}
-        <p className='text-muted-foreground'>
-          {hasActiveSubscription
-            ? 'Manage your current subscription or upgrade your plan'
-            : 'Choose the package that best suits your learning needs'}
-        </p>
-      </div>
-
-      {/* Current Subscription Card */}
-      {hasActiveSubscription && (
-        <Card className='mb-8'>
-          <CardHeader>
-            <CardTitle>Current Subscription</CardTitle>
-            <CardDescription>Your active learning package</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className='space-y-4'>
-              <div className='flex items-center justify-between'>
-                <div>
-                  <h3 className='font-semibold'>
-                    {currentSubscription?.packageName}
-                  </h3>
-                  <p className='text-sm text-muted-foreground'>
-                    {currentSubscription?.billingType}
-                  </p>
-                </div>
-                <Badge variant='secondary'>{currentSubscription?.status}</Badge>
+        <div className='grid gap-8'>
+          {packages.map((pkg) => (
+            <div key={pkg.packageName} className='space-y-4'>
+              <h2 className='text-2xl font-semibold text-center'>
+                {pkg.packageName}
+              </h2>
+              <div className='grid md:grid-cols-2 gap-8'>
+                {pkg.plans.map((plan) => (
+                  <Card
+                    key={plan.name}
+                    className={cn(
+                      'relative',
+                      subscriptionData?.subscription?.packageName ===
+                        pkg.packageName &&
+                        subscriptionData?.subscription?.billingType.toLowerCase() ===
+                          plan.name.toLowerCase()
+                        ? 'border-primary'
+                        : ''
+                    )}
+                  >
+                    {/* {plan.isPopular && (
+                      <div className='absolute -top-3 left-1/2 transform -translate-x-1/2'>
+                        <Badge className='bg-primary text-white'>
+                          Most Popular
+                        </Badge>
+                      </div>
+                    )} */}
+                    {subscriptionData?.subscription?.packageName ===
+                      pkg.packageName &&
+                      subscriptionData?.subscription?.billingType.toLowerCase() ===
+                        plan.name.toLowerCase() && (
+                        <div className='absolute -top-3 left-1/2 transform -translate-x-1/2'>
+                          <Badge className='bg-green-500 text-white'>
+                            Current Plan
+                          </Badge>
+                        </div>
+                      )}
+                    <CardHeader>
+                      <CardTitle className='flex items-baseline justify-between'>
+                        <span>{plan.name}</span>
+                        <span className='text-3xl font-bold'>
+                          ${plan.price}
+                          <span className='text-sm font-normal text-muted-foreground'>
+                            /mo
+                          </span>
+                        </span>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ul className='space-y-2'>
+                        {plan.features.map((feature, i) => (
+                          <li key={i} className='flex items-center gap-2'>
+                            <Check className='h-4 w-4 text-primary' />
+                            <span>{feature}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </CardContent>
+                    <CardFooter>
+                      <Button
+                        className='w-full hover:bg-opal hover:text-eastern-blue-400'
+                        // variant={plan.isPopular ? 'default' : 'outline'}
+                        variant='default'
+                        disabled={
+                          isLoading ||
+                          (subscriptionData?.subscription?.packageName ===
+                            pkg.packageName &&
+                            subscriptionData?.subscription?.billingType.toLowerCase() ===
+                              plan.name.toLowerCase())
+                        }
+                        onClick={() =>
+                          handleUpgrade(pkg.packageName, plan.name)
+                        }
+                      >
+                        {isLoading && selectedPackage === pkg.packageName ? (
+                          <Spinner size={16} className='mr-2' />
+                        ) : subscriptionData?.subscription?.packageName ===
+                            pkg.packageName &&
+                          subscriptionData?.subscription?.billingType.toLowerCase() ===
+                            plan.name.toLowerCase() ? (
+                          'Current Plan'
+                        ) : (
+                          'Upgrade'
+                        )}
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                ))}
               </div>
-
-              {isLoadingDetails ? (
-                <div className='flex justify-center py-2'>
-                  <Spinner size={16} />
-                </div>
-              ) : subscriptionDetails?.success &&
-                subscriptionDetails?.details ? (
-                <div className='space-y-2 text-sm'>
-                  <div className='flex justify-between'>
-                    <span className='text-muted-foreground'>Next payment:</span>
-                    <span className='font-medium'>
-                      {format(
-                        new Date(subscriptionDetails.details.currentPeriodEnd),
-                        'MMMM d, yyyy'
-                      )}
-                    </span>
-                  </div>
-                  <div className='flex justify-between'>
-                    <span className='text-muted-foreground'>Amount:</span>
-                    <span className='font-medium'>
-                      {subscriptionDetails.details.nextPaymentAmount}{' '}
-                      {subscriptionDetails.details.currency}
-                    </span>
-                  </div>
-                  {subscriptionDetails.details.cancelAtPeriodEnd && (
-                    <p className='text-yellow-600 mt-2'>
-                      Your subscription will end on{' '}
-                      {format(
-                        new Date(subscriptionDetails.details.currentPeriodEnd),
-                        'MMMM d, yyyy'
-                      )}
-                    </p>
-                  )}
-                </div>
-              ) : null}
             </div>
-          </CardContent>
-          <CardFooter>
-            <Button
-              variant='destructive'
-              onClick={handleCancelSubscription}
-              disabled={
-                isCanceling || subscriptionDetails?.details?.cancelAtPeriodEnd
-              }
-              className='w-full'
-            >
-              {isCanceling ? (
-                <>
-                  <Spinner size={16} className='mr-2' />
-                  Canceling...
-                </>
-              ) : subscriptionDetails?.details?.cancelAtPeriodEnd ? (
-                'Cancellation Scheduled'
-              ) : (
-                'Cancel Subscription'
-              )}
-            </Button>
-          </CardFooter>
-        </Card>
-      )}
+          ))}
+        </div>
 
-      {/* Package Cards */}
-      <div className='grid gap-6 md:grid-cols-3'>
-        {packages.packages.map((pkg: Package) => (
-          <Card key={pkg.packageName} className='relative'>
-            {hasActiveSubscription &&
-              currentSubscription?.packageName === pkg.packageName && (
-                <div className='absolute -top-3 left-1/2 -translate-x-1/2'>
-                  <Badge variant='default'>Current Plan</Badge>
-                </div>
-              )}
+        {subscriptionData?.subscription && (
+          <Card className='mt-8'>
             <CardHeader>
-              <CardTitle>{pkg.packageName}</CardTitle>
-              <CardDescription>{pkg.numberOfLessons}</CardDescription>
+              <CardTitle>Current Subscription</CardTitle>
+              <CardDescription>
+                Your current plan and billing details
+              </CardDescription>
             </CardHeader>
             <CardContent className='space-y-4'>
-              <div>
-                <div className='text-2xl font-bold'>
-                  {pkg.monthlyCost} USD
-                  <span className='text-sm font-normal text-muted-foreground'>
-                    /month
-                  </span>
+              <div className='flex justify-between items-center'>
+                <div>
+                  <p className='font-medium'>
+                    {subscriptionData.subscription.packageName} -{' '}
+                    {subscriptionData.subscription.billingType} Plan
+                  </p>
+                  <p className='text-sm text-muted-foreground'>
+                    {subscriptionDetails?.details?.currentPeriodEnd ? (
+                      <>
+                        Next billing date:{' '}
+                        {format(
+                          subscriptionDetails.details.currentPeriodEnd,
+                          'PPP'
+                        )}
+                      </>
+                    ) : (
+                      'Loading billing details...'
+                    )}
+                  </p>
                 </div>
-                <p className='text-sm text-muted-foreground'>
-                  {pkg.lessonDuration} per lesson
-                </p>
-              </div>
-
-              {/* Standard Benefits */}
-              <div>
-                <h4 className='font-semibold mb-2'>
-                  Standard Package Includes:
-                </h4>
-                <ul className='space-y-2'>
-                  {pkg.billingOptions[0].benefits.map((benefit, idx) => (
-                    <li key={idx} className='flex items-start gap-2'>
-                      <Check className='h-4 w-4 text-green-500 mt-1 flex-shrink-0' />
-                      <span className='text-sm'>{benefit}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* Premium Benefits */}
-              <div>
-                <h4 className='font-semibold mb-2'>Premium Package Adds:</h4>
-                <ul className='space-y-2'>
-                  {pkg.billingOptions[1].benefits
-                    .filter((b) => !pkg.billingOptions[0].benefits.includes(b))
-                    .map((benefit, idx) => (
-                      <li key={idx} className='flex items-start gap-2'>
-                        <Check className='h-4 w-4 text-green-500 mt-1 flex-shrink-0' />
-                        <span className='text-sm'>{benefit}</span>
-                      </li>
-                    ))}
-                </ul>
+                <Button
+                  variant='destructive'
+                  disabled={isCanceling}
+                  onClick={handleCancelSubscription}
+                >
+                  {isCanceling ? <Spinner size={16} className='mr-2' /> : null}
+                  Cancel Subscription
+                </Button>
               </div>
             </CardContent>
-            <CardFooter className='flex flex-col gap-2'>
-              <Button
-                className='w-full'
-                onClick={() => handleUpgrade(pkg.packageName, 'standard')}
-                disabled={
-                  (isLoading && selectedPackage === pkg.packageName) ||
-                  (hasActiveSubscription &&
-                    currentSubscription?.packageName === pkg.packageName)
-                }
-              >
-                {isLoading && selectedPackage === pkg.packageName ? (
-                  <Spinner size={16} className='mr-2' />
-                ) : (
-                  <CreditCard className='h-4 w-4 mr-2' />
-                )}
-                Get Standard
-              </Button>
-              <Button
-                variant='outline'
-                className='w-full'
-                onClick={() => handleUpgrade(pkg.packageName, 'premium')}
-                disabled={
-                  (isLoading && selectedPackage === pkg.packageName) ||
-                  (hasActiveSubscription &&
-                    currentSubscription?.packageName === pkg.packageName)
-                }
-              >
-                {isLoading && selectedPackage === pkg.packageName ? (
-                  <Spinner size={16} className='mr-2' />
-                ) : (
-                  <CreditCard className='h-4 w-4 mr-2' />
-                )}
-                Get Premium
-              </Button>
-            </CardFooter>
           </Card>
-        ))}
+        )}
       </div>
     </div>
   )

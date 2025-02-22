@@ -47,7 +47,7 @@ const StudentDashboard = async () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <ScheduleTable />
+                  <ScheduleTable userId={user?.id} role={user?.role} />
                 </CardContent>
               </Card>
 

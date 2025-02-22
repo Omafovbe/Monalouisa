@@ -77,7 +77,10 @@ const TeacherDashboard = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <ScheduleTable />
+                  <ScheduleTable
+                    userId={session?.user?.id}
+                    role={session?.user?.role}
+                  />
                 </CardContent>
               </Card>
 

@@ -1,7 +1,11 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
-import { getAllSchedules } from '@/actions/actions'
+import {
+  getAllSchedules,
+  getTeacherSchedule,
+  getStudentSchedule,
+} from '@/actions/actions'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import {
   Table,
@@ -17,35 +21,71 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { useState, useMemo } from 'react'
 import { ChevronLeft, ChevronRight, Search } from 'lucide-react'
+import { useSession } from 'next-auth/react'
 
-// interface Schedule {
-//   id: number
-//   title: string
-//   start: Date
-//   end: Date
-//   studentId: string
-//   teacherId: string
-//   subjectId: number
-//   studentName: string
-//   teacherName: string
-//   subjectName: string
-// }
+interface ScheduleTableProps {
+  userId?: string
+  role?: 'STUDENT' | 'TEACHER' | 'ADMIN'
+}
 
-export function ScheduleTable() {
+type Schedule = {
+  id: number
+  title: string
+  start: Date
+  end: Date
+  studentId: string
+  teacherId: string
+  subjectId: number
+  studentName: string
+  teacherName: string
+  subjectName: string
+}
+
+type QueryResponse = {
+  schedules: Schedule[]
+  error?: string
+}
+
+export function ScheduleTable({ userId, role }: ScheduleTableProps) {
   const [searchQuery, setSearchQuery] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 10
+  const { data: session } = useSession()
 
   const { data: scheduleData, isLoading } = useQuery({
-    queryKey: ['schedules'],
-    queryFn: getAllSchedules,
+    queryKey: ['schedules', userId, role] as const,
+    queryFn: async () => {
+      let response: QueryResponse = { schedules: [] }
+
+      try {
+        if (!userId || !role) {
+          response = await getAllSchedules()
+        } else if (role === 'TEACHER') {
+          response = await getTeacherSchedule(userId)
+        } else if (role === 'STUDENT') {
+          response = await getStudentSchedule(userId)
+        } else {
+          response = await getAllSchedules()
+        }
+
+        // Ensure we always return an array of schedules
+        return {
+          schedules: response.schedules || [],
+          error: response.error,
+        }
+        /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+      } catch (e) {
+        return { schedules: [], error: 'Failed to fetch schedules' }
+      }
+    },
+    enabled: !userId || !!session?.user?.id,
   })
 
   // Filter and paginate data
   const filteredAndPaginatedData = useMemo(() => {
-    if (!scheduleData?.schedules) return { schedules: [], totalPages: 0 }
+    const schedules = scheduleData?.schedules || []
 
-    const filtered = scheduleData.schedules.filter((schedule) => {
+    const filtered = schedules.filter((schedule: Schedule) => {
       const query = searchQuery.toLowerCase()
       return (
         schedule.studentName.toLowerCase().includes(query) ||

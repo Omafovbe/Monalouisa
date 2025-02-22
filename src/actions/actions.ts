@@ -675,7 +675,11 @@ export async function getTeacherSchedule(userId: string) {
   try {
     const teacher = await db.teacher.findUnique({
       where: { userId },
-      select: { id: true, userId: true },
+      select: {
+        id: true,
+        userId: true,
+        user: { select: { name: true, email: true } },
+      },
     })
 
     if (!teacher) {
@@ -717,6 +721,10 @@ export async function getTeacherSchedule(userId: string) {
         subjectId: schedule.subjectId,
         studentName: schedule.student.user.name || schedule.student.user.email,
         subjectName: schedule.subject.name,
+
+        teacherId: teacher.userId,
+        teacherName: teacher.user.name || teacher.user.email,
+        // teacherEmail: teacher.user.email,
       })),
     }
   } catch (error) {
@@ -881,7 +889,7 @@ export async function getStudentSchedule(userId: string) {
   try {
     const student = await db.student.findUnique({
       where: { userId },
-      select: { id: true },
+      select: { id: true, user: { select: { name: true, email: true } } },
     })
 
     if (!student) {
@@ -921,6 +929,8 @@ export async function getStudentSchedule(userId: string) {
         end: schedule.endTime,
         teacherId: schedule.teacherId,
         subjectId: schedule.subjectId,
+        studentId: schedule.studentId,
+        studentName: student.user.name || student.user.email,
         teacherName: schedule.teacher.user.name || schedule.teacher.user.email,
         subjectName: schedule.subject.name,
       })),
@@ -980,6 +990,6 @@ export async function getAllSchedules() {
     }
   } catch (error) {
     console.log('error', error)
-    return { error: 'Failed to fetch schedules' }
+    return { error: 'Failed to fetch schedules', schedules: [] }
   }
 }
