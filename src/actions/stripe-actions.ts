@@ -205,7 +205,7 @@ export async function getSubscription(userId: string) {
         error: 'Student record not found',
       }
     }
-    console.log('student', student)
+    // console.log('student', student)
     // Return null if no subscription exists
     if (!student.subscription) {
       return {

@@ -12,12 +12,13 @@ const navigationLinks = [
   { label: 'Classes', href: '#' },
   { label: 'About', href: '/about' },
   { label: 'Teachers', href: '/teach' },
-  { label: 'Learn', href: '/learn' },
+  // { label: 'Learn', href: '/learn' },
 ]
 
 const roleBasedLinks = {
   ADMIN: { label: 'Admin Dashboard', href: '/admin' },
   TEACHER: { label: 'Teacher Dashboard', href: '/teacher' },
+  STUDENT: { label: 'Student Dashboard', href: '/student' },
 }
 
 const Navbar = () => {
@@ -60,8 +61,10 @@ const Navbar = () => {
               {session ? (
                 <SignOutButton />
               ) : (
-                <Button asChild>
-                  <Link href='/login'>Login</Link>
+                <Button asChild className=' bg-goldyellow-300'>
+                  <Link href='/login' className='text-goldyellow-900'>
+                    Login
+                  </Link>
                 </Button>
               )}
             </>

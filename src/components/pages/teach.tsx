@@ -252,7 +252,11 @@ export function TeachPage() {
                 )}
               />
 
-              <Button type='submit' className='w-full' disabled={isSubmitting}>
+              <Button
+                type='submit'
+                className='w-full hover:bg-goldyellow-400 bg-goldyellow-300 text-goldyellow-900 font-bold'
+                disabled={isSubmitting}
+              >
                 {isSubmitting ? 'Submitting...' : 'Submit Application'}
               </Button>
             </form>

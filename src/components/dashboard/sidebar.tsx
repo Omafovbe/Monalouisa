@@ -80,7 +80,7 @@ const studentMenuItems: MenuItem[] = [
     icon: <Calendar className='h-4 w-4 mr-2' />,
   },
   {
-    href: '/student/classes',
+    href: '/student/subjects',
     label: 'My Classes',
     icon: <BookOpen className='h-4 w-4 mr-2' />,
   },

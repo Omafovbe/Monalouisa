@@ -205,7 +205,7 @@ const LandingPage = () => {
               <motion.span
                 key={`dark-${index}`}
                 variants={wordVariants}
-                className='inline-block mr-[0.5rem] text-korma'
+                className='inline-block mr-[0.5rem] text-goldyellow-300'
               >
                 {word}
               </motion.span>
@@ -237,7 +237,7 @@ const LandingPage = () => {
               {ageOptions.map((age) => (
                 <button
                   key={age}
-                  className='w-14 h-14 rounded-full border-2 border-eastern-blue-300
+                  className='w-14 h-14 rounded-full border-2 border-goldyellow-300
                             flex items-center justify-center font-medium relative 
                             overflow-hidden group transition-colors duration-400'
                 >
@@ -245,14 +245,14 @@ const LandingPage = () => {
                     {age}
                   </span>
                   <div
-                    className='absolute bottom-0 left-0 w-full bg-eastern-blue
+                    className='absolute bottom-0 left-0 w-full bg-goldyellow-300
                                 transition-all duration-300 ease-out
                                 h-0 group-hover:h-full'
                   />
                 </button>
               ))}
               <button
-                className='w-14 h-14 rounded-full border-2 border-eastern-blue-300 
+                className='w-14 h-14 rounded-full border-2 border-goldyellow-300 
                           flex items-center justify-center font-medium relative 
                           overflow-hidden group transition-colors duration-300'
               >
@@ -260,7 +260,7 @@ const LandingPage = () => {
                   13+
                 </span>
                 <div
-                  className='absolute bottom-0 left-0 w-full bg-eastern-blue 
+                  className='absolute bottom-0 left-0 w-full bg-goldyellow-300 
                               transition-all duration-300 ease-out
                               h-0 group-hover:h-full'
                 />

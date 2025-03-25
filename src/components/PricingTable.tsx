@@ -56,7 +56,7 @@ const PricingTable: React.FC<PricingTableProps> = ({ data }) => {
             {activeBilling === type && (
               <motion.div
                 layoutId='activeTab'
-                className='absolute inset-0 bg-[#0b92f9] rounded-md -z-10'
+                className='absolute inset-0 bg-gradient-to-r from-yellow-300 to-orange-500 rounded-md -z-10'
                 transition={{ type: 'spring', stiffness: 300, damping: 20 }}
               />
             )}
