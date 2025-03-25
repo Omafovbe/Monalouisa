@@ -11,11 +11,13 @@ import {
   CardHeader,
 } from '@/components/ui/card'
 import { auth } from '@/lib/auth'
-
+import { redirect } from 'next/navigation'
 const StudentDashboard = async () => {
   const session = await auth()
   const user = session?.user
-
+  if (!user) {
+    redirect('/')
+  }
   return (
     <>
       {/* Main Content */}

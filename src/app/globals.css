@@ -15,6 +15,7 @@ body {
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 3.9%;
     --primary: 193.15, 65.77%, 21.76%;
+    --primary-hover: 193.15, 65.77%, 16.76%;
     --primary-foreground: 0 0% 98%;
     --secondary: 0 0% 96.1%;
     --secondary-foreground: 0 0% 9%;
@@ -50,6 +51,7 @@ body {
     --popover: 0 0% 3.9%;
     --popover-foreground: 0 0% 98%;
     --primary: 0 0% 98%;
+    --primary-hover: 0 0% 85%;
     --primary-foreground: 0 0% 9%;
     --secondary: 0 0% 14.9%;
     --secondary-foreground: 0 0% 98%;
@@ -84,6 +86,17 @@ body {
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+/* Custom button styles */
+@layer components {
+  .btn-primary {
+    @apply bg-primary text-primary-foreground transition-colors;
+  }
+
+  .btn-primary:hover {
+    background-color: hsl(var(--primary-hover));
   }
 }
 
@@ -148,4 +161,13 @@ body {
 
 .rbc-show-more {
   @apply text-primary hover:text-primary/90 hover:underline;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
 }
