@@ -49,12 +49,12 @@ interface Discussion {
   updatedAt: string | Date
 }
 
-interface Teacher {
-  id: number
-  name: string
-  profilePicture?: string
-  bio?: string
-}
+// interface Teacher {
+//   id: number
+//   name: string
+//   profilePicture?: string
+//   bio?: string
+// }
 
 export default function SubjectDetailsPage() {
   const params = useParams()
