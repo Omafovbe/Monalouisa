@@ -110,7 +110,7 @@ export function EnrolledSubjects({ studentId }: EnrolledSubjectsProps) {
           <BookOpen className='mx-auto h-12 w-12 text-muted-foreground/50' />
           <h3 className='mt-3 text-lg font-semibold'>No Enrolled Subjects</h3>
           <p className='text-sm text-muted-foreground'>
-            You haven't enrolled in any subjects yet.
+            You haven&apos;t enrolled in any subjects yet.
           </p>
         </CardContent>
       </Card>

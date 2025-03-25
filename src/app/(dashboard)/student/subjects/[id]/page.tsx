@@ -27,6 +27,35 @@ import { getSubscription } from '@/actions/stripe-actions'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { useToast } from '@/hooks/use-toast'
 
+interface ClassSession {
+  id: number
+  title: string
+  startTime: string | Date
+  endTime: string | Date
+}
+
+interface Material {
+  id: number
+  title: string
+  type: string
+  createdAt: string | Date
+}
+
+interface Discussion {
+  id: number
+  title: string
+  messageCount: number
+  lastMessage: string
+  updatedAt: string | Date
+}
+
+interface Teacher {
+  id: number
+  name: string
+  profilePicture?: string
+  bio?: string
+}
+
 export default function SubjectDetailsPage() {
   const params = useParams()
   const router = useRouter()
@@ -209,39 +238,47 @@ export default function SubjectDetailsPage() {
                   {subject.upcomingClasses &&
                   subject.upcomingClasses.length > 0 ? (
                     <div className='space-y-4'>
-                      {subject.upcomingClasses.map((classItem: any) => (
-                        <div
-                          key={classItem.id}
-                          className='flex items-center justify-between p-4 border rounded-lg'
-                        >
-                          <div>
-                            <h4 className='font-medium'>
-                              {classItem.title || 'Class Session'}
-                            </h4>
-                            <div className='text-sm text-muted-foreground'>
-                              {format(
-                                new Date(classItem.startTime),
-                                'EEEE, MMMM d, yyyy'
-                              )}
-                            </div>
-                            <div className='text-sm text-muted-foreground'>
-                              {format(new Date(classItem.startTime), 'h:mm a')}{' '}
-                              - {format(new Date(classItem.endTime), 'h:mm a')}
-                            </div>
-                          </div>
-                          <Button
-                            variant='outline'
-                            size='sm'
-                            className='hover:bg-gray-100 dark:hover:bg-gray-800'
-                            onClick={() => handleActionRequiringSubscription()}
-                            disabled={!hasActiveSubscription}
+                      {subject.upcomingClasses.map(
+                        (classItem: ClassSession) => (
+                          <div
+                            key={classItem.id}
+                            className='flex items-center justify-between p-4 border rounded-lg'
                           >
-                            {hasActiveSubscription
-                              ? 'Join Class'
-                              : 'Subscription Required'}
-                          </Button>
-                        </div>
-                      ))}
+                            <div>
+                              <h4 className='font-medium'>
+                                {classItem.title || 'Class Session'}
+                              </h4>
+                              <div className='text-sm text-muted-foreground'>
+                                {format(
+                                  new Date(classItem.startTime),
+                                  'EEEE, MMMM d, yyyy'
+                                )}
+                              </div>
+                              <div className='text-sm text-muted-foreground'>
+                                {format(
+                                  new Date(classItem.startTime),
+                                  'h:mm a'
+                                )}{' '}
+                                -{' '}
+                                {format(new Date(classItem.endTime), 'h:mm a')}
+                              </div>
+                            </div>
+                            <Button
+                              variant='outline'
+                              size='sm'
+                              className='hover:bg-gray-100 dark:hover:bg-gray-800'
+                              onClick={() =>
+                                handleActionRequiringSubscription()
+                              }
+                              disabled={!hasActiveSubscription}
+                            >
+                              {hasActiveSubscription
+                                ? 'Join Class'
+                                : 'Subscription Required'}
+                            </Button>
+                          </div>
+                        )
+                      )}
                     </div>
                   ) : (
                     <div className='text-center py-6 text-muted-foreground'>
@@ -260,7 +297,7 @@ export default function SubjectDetailsPage() {
                 <CardContent>
                   {subject.materials && subject.materials.length > 0 ? (
                     <div className='space-y-4'>
-                      {subject.materials.map((material: any) => (
+                      {subject.materials.map((material: Material) => (
                         <div
                           key={material.id}
                           className='flex items-center justify-between p-4 border rounded-lg'
@@ -309,7 +346,7 @@ export default function SubjectDetailsPage() {
                 <CardContent>
                   {subject.discussions && subject.discussions.length > 0 ? (
                     <div className='space-y-4'>
-                      {subject.discussions.map((discussion: any) => (
+                      {subject.discussions.map((discussion: Discussion) => (
                         <div
                           key={discussion.id}
                           className='p-4 border rounded-lg'
@@ -321,11 +358,11 @@ export default function SubjectDetailsPage() {
                             </Badge>
                           </div>
                           <p className='text-sm text-muted-foreground mb-3'>
-                            {discussion.lastMessage || 'No messages yet'}
+                            Last message: {discussion.lastMessage}
                           </p>
                           <div className='flex justify-between items-center'>
                             <div className='text-xs text-muted-foreground'>
-                              Last activity:{' '}
+                              Updated:{' '}
                               {format(
                                 new Date(discussion.updatedAt),
                                 'MMM d, yyyy'
