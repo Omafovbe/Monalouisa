@@ -19,7 +19,7 @@ import LandingPage from './home2'
 import SubjectList from '@/components/SubjectList'
 import { DecorativeSection } from '@/components/DecorativeSection'
 import { TeacherFeature } from '@/components/TeacherFeature'
-import FAQ from '@/components/Faq'
+import FAQ from '@/components/faq'
 
 export default function Home() {
   // const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
