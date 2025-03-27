@@ -155,7 +155,9 @@ const PackageCard: React.FC<PackageCardProps> = ({
           animate={{ scale: 1 }}
           transition={{ type: 'spring', stiffness: 300 }}
         >
-          <span className='text-2xl font-bold text-korma'>{cost} USD</span>
+          <span className='text-2xl font-bold text-korma'>
+            {cost} USD / Month
+          </span>
         </motion.div>
 
         <motion.div
