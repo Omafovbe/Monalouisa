@@ -9,9 +9,7 @@
         {
           "type": "Standard Billing",
           "discounts": "20% discount for siblings and first 20 students",
-          "benefits": [
-            "Perfect for beginners (ages 4-8) learning basic language skills"
-          ]
+          "benefits": ["Perfect for beginners learning basic language skills"]
         },
         {
           "type": "Premium Billing",
@@ -41,7 +39,7 @@
           "type": "Premium Billing",
           "discounts": "20% discount for siblings and first 20 students",
           "benefits": [
-            "Designed for students progressing to intermediate level (ages 9-13)",
+            "Designed for students progressing to intermediate level",
             "Focus on conversational skills, pronunciation, and reading comprehension",
             "Introduction to cultural lessons to broaden language understanding",
             "Bi-weekly progress reports and feedback",
@@ -65,7 +63,7 @@
           "type": "Premium Billing",
           "discounts": "20% discount for siblings and first 20 students",
           "benefits": [
-            "Tailored for advanced learners (ages 14-18)",
+            "Tailored for advanced learners",
             "In-depth grammar, vocabulary expansion, and mastering idiomatic expressions",
             "Focus on fluency, critical thinking, and practical language use in real-life contexts",
             "Priority scheduling for lesson bookings",
