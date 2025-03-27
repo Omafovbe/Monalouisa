@@ -83,9 +83,9 @@ export function DecorativeSection() {
             className='relative'
           >
             <Image
-              src='/kids-drawing.png'
+              src='/learning_together.jpg'
               alt='Happy student'
-              width={600}
+              width={700}
               height={400}
               className='rounded-3xl border-1'
             />

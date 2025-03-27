@@ -10,7 +10,14 @@ import packagesData from '@/app/data/packages.json'
 import { Testimonials } from '@/components/Testimonials'
 
 const LandingPage = () => {
-  const ageOptions = Array.from({ length: 9 }, (_, i) => i + 4)
+  const ageRanges = [
+    { label: '4-9', range: [4, 5, 6, 7, 8, 9] },
+    { label: '10-15', range: [10, 11, 12, 13, 14, 15] },
+    { label: '16-21', range: [16, 17, 18, 19, 20, 21] },
+    { label: '22-29', range: [22, 23, 24, 25, 26, 27, 28, 29] },
+    { label: '30-39', range: [30, 31, 32, 33, 34, 35, 36, 37, 38, 39] },
+    { label: '40+', range: [40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50] },
+  ]
 
   const steps = [
     {
@@ -227,22 +234,22 @@ const LandingPage = () => {
           </motion.p>
 
           <motion.div
-            className='bg-white max-w-[460px] px-6 py-8 rounded-2xl'
+            className='bg-white max-w-[400px] px-6 py-8 rounded-2xl'
             variants={itemVariants}
           >
             <h3 className='text-xl text-[#262626] font-semibold mb-4 text-center'>
-              Child&#39;s age
+              Age Category
             </h3>
             <div className='flex flex-wrap gap-4 justify-center'>
-              {ageOptions.map((age) => (
+              {ageRanges.map((ageRange, index) => (
                 <button
-                  key={age}
-                  className='w-14 h-14 rounded-full border-2 border-goldyellow-300
+                  key={index}
+                  className='min-w-[80px] h-14 rounded-full border-2 border-goldyellow-300
                             flex items-center justify-center font-medium relative 
-                            overflow-hidden group transition-colors duration-400'
+                            overflow-hidden group transition-colors duration-400 px-4'
                 >
-                  <span className='relative z-10 transition-colors duration-400 group-hover:text-white'>
-                    {age}
+                  <span className='relative z-10 transition-colors duration-400 group-hover:text-goldyellow-900'>
+                    {ageRange.label}
                   </span>
                   <div
                     className='absolute bottom-0 left-0 w-full bg-goldyellow-300
@@ -251,20 +258,6 @@ const LandingPage = () => {
                   />
                 </button>
               ))}
-              <button
-                className='w-14 h-14 rounded-full border-2 border-goldyellow-300 
-                          flex items-center justify-center font-medium relative 
-                          overflow-hidden group transition-colors duration-300'
-              >
-                <span className='relative z-10 transition-colors duration-300 group-hover:text-white'>
-                  13+
-                </span>
-                <div
-                  className='absolute bottom-0 left-0 w-full bg-goldyellow-300 
-                              transition-all duration-300 ease-out
-                              h-0 group-hover:h-full'
-                />
-              </button>
             </div>
           </motion.div>
         </motion.div>

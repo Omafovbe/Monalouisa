@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { ChevronDown } from 'lucide-react'
+// import { ChevronDown } from 'lucide-react'
 import { useState } from 'react'
 
 interface FAQ {
@@ -11,39 +11,44 @@ interface FAQ {
 
 const faqs: FAQ[] = [
   {
-    question: 'What is Monlouisa Teaches?',
+    question: 'What ages do you teach?',
     answer:
-      'Monlouisa Teaches is an online platform that offers comprehensive language courses for learners aged 4 and above, focusing on Spanish, French, Chinese, and English.',
+      'We specialize in teaching languages to children between the ages of 4 and 18. Our curriculum is tailored to different age groups with age-appropriate teaching methods and materials.',
   },
   {
-    question: 'How long does each class last?',
+    question: 'What languages do you offer?',
     answer:
-      'Our courses are structured for long-term learning with each class period built to last for just 40 mins, with progressive milestones to track development.',
+      'We currently offer courses in English, French, Spanish, Arabic, and Chinese. Each language is taught by native or fluent speakers with expertise in teaching children.',
   },
   {
-    question: 'Are there any discounts available?',
+    question: 'How do online classes work?',
     answer:
-      'Yes, we offer a 20% discount for siblings and a 20% discount for the first 20 students to enroll.',
+      'Our online classes are conducted through our secure video platform. Students join at their scheduled time, interact live with their teacher and sometimes with other students. Classes include interactive activities, games, and real-time feedback.',
   },
   {
-    question: 'Are live classes included?',
+    question: "What's your teaching approach?",
     answer:
-      'Yes, our courses include live, instructor-led sessions to enhance speaking and interaction skills.',
+      'We use a communicative, immersive approach focused on getting children speaking and understanding from day one. Our methods incorporate games, songs, stories, and cultural elements to make learning engaging and effective.',
   },
   {
-    question: 'What devices can I use to access the courses?',
+    question: 'How much does it cost?',
     answer:
-      'Our courses are compatible with laptops, tablets, and smartphones for flexibility and convenience.',
+      'Our pricing varies based on the language, frequency of lessons, and package you choose. We offer monthly subscriptions starting from $79/month for weekly classes. Please check our pricing page for current rates and special promotions.',
   },
   {
-    question: 'How is progress monitored?',
+    question: 'Can parents observe the lessons?',
     answer:
-      "Progress is tracked through regular quizzes, assignments, and speaking tasks. Parents can also join in during their children's courses as well as access performance reports to monitor their child's growth.",
+      'Yes! Parents are welcome to observe lessons, especially for younger children. We believe in transparency and encourage family involvement in the learning process.',
   },
   {
-    question: 'Can adults enroll in these courses?',
+    question: 'Do you offer trial lessons?',
     answer:
-      'Currently, our programs are specifically designed for learners aged 4–18.',
+      "Absolutely! We offer a complimentary 30-minute trial lesson to new students. This allows you and your child to meet the teacher, experience our teaching style, and ensure it's a good fit before committing.",
+  },
+  {
+    question: 'How do you track progress?',
+    answer:
+      "We provide regular progress reports and conduct informal assessments to track your child's language development. Parents receive feedback after each class and more comprehensive evaluations quarterly.",
   },
 ]
 
@@ -52,21 +57,43 @@ const FAQItem = ({ faq, index }: { faq: FAQ; index: number }) => {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.1 }}
-      className='border-b border-gray-200 last:border-none'
+      layout
+      initial={{ borderRadius: 8 }}
+      className='overflow-hidden rounded-lg border border-gray-200 bg-white shadow-md transition-all duration-300'
     >
       <motion.button
-        className='flex w-full items-center justify-between py-6 text-left'
+        layout
         onClick={() => setIsOpen(!isOpen)}
+        className='flex w-full items-center justify-between px-6 py-4 text-left'
+        whileHover={{ backgroundColor: 'rgba(253, 224, 71, 0.1)' }}
       >
-        <h3 className='text-lg font-semibold text-gray-900'>{faq.question}</h3>
+        <motion.h3 className='text-lg font-medium text-gray-900 flex items-center'>
+          <motion.span
+            className=' h-6 w-6 rounded-full bg-goldyellow-300 text-white flex items-center justify-center mr-3 text-sm font-semibold'
+            initial={{ scale: 1 }}
+            whileHover={{ scale: 1.1 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 10 }}
+          >
+            {index + 1}
+          </motion.span>
+          {faq.question}
+        </motion.h3>
         <motion.div
           animate={{ rotate: isOpen ? 180 : 0 }}
-          transition={{ duration: 0.2 }}
+          transition={{ duration: 0.3 }}
+          className='h-5 w-5 text-goldyellow-500'
         >
-          <ChevronDown className='h-5 w-5 text-gray-500' />
+          <svg
+            xmlns='http://www.w3.org/2000/svg'
+            viewBox='0 0 20 20'
+            fill='currentColor'
+          >
+            <path
+              fillRule='evenodd'
+              d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z'
+              clipRule='evenodd'
+            />
+          </svg>
         </motion.div>
       </motion.button>
       <motion.div
@@ -77,9 +104,11 @@ const FAQItem = ({ faq, index }: { faq: FAQ; index: number }) => {
           marginBottom: isOpen ? '24px' : '0px',
         }}
         transition={{ duration: 0.3 }}
-        className='overflow-hidden'
+        className='overflow-hidden px-6'
       >
-        <p className='text-gray-600'>{faq.answer}</p>
+        <p className='text-gray-600 pb-4 border-t border-gray-100 pt-4'>
+          {faq.answer}
+        </p>
       </motion.div>
     </motion.div>
   )
@@ -100,7 +129,16 @@ const FAQ = () => {
           animate={{ scale: 1 }}
           transition={{ duration: 0.5 }}
         >
-          Frequently Asked Questions
+          <span className='relative inline-block'>
+            Frequently Asked
+            <motion.span
+              className='absolute -bottom-2 left-0 h-1 bg-goldyellow-300 rounded-full'
+              initial={{ width: '0%' }}
+              animate={{ width: '100%' }}
+              transition={{ duration: 0.8, delay: 0.5 }}
+            />
+          </span>{' '}
+          <span className='text-goldyellow-500'>Questions</span>
         </motion.h1>
         <motion.p
           className='mt-4 text-lg text-gray-600'
@@ -108,18 +146,30 @@ const FAQ = () => {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2 }}
         >
-          Everything you need to know about Monlouisa Teaches
+          Find answers to common questions about our teaching methods,
+          curriculum, and support.
         </motion.p>
       </motion.div>
 
       <motion.div
-        className='mt-12 divide-y divide-gray-200 rounded-xl bg-white p-6 shadow-lg'
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
+        className='mt-12 space-y-6'
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.6, delay: 0.3 }}
       >
         {faqs.map((faq, index) => (
-          <FAQItem key={index} faq={faq} index={index} />
+          <motion.div
+            key={index}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{
+              duration: 0.5,
+              delay: 0.4 + index * 0.1,
+              ease: 'easeOut',
+            }}
+          >
+            <FAQItem faq={faq} index={index} />
+          </motion.div>
         ))}
       </motion.div>
 

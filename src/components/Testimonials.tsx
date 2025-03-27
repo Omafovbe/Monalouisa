@@ -7,11 +7,11 @@ import { QuoteIcon } from 'lucide-react'
 const testimonials = [
   {
     id: 1,
-    name: 'Sarah M.',
-    role: 'Parent of Emma, Age 8',
-    text: 'My daughter has made incredible progress in Spanish. The teachers are patient and make learning fun. She looks forward to every class!',
+    name: 'Sarah Khalid.',
+    role: 'Parent of Nada, Age 17',
+    text: 'لقد أحرزت ابنتي تقدمًا مذهلاً في اللغة الإنجليزية. المعلمون صبورون ويجعلون التعلم ممتعًا. إنها تتطلع إلى كل حصة!',
     image: '/avatars/sarah.jpg',
-    initials: 'SM',
+    initials: 'SK',
   },
   {
     id: 2,
@@ -23,27 +23,27 @@ const testimonials = [
   },
   {
     id: 3,
-    name: 'Michelle K.',
-    role: 'Parent of Twins, Age 6',
+    name: 'Adrien D.',
+    role: 'Engineer',
     text: 'Having both my children learn Chinese together has been amazing. The teachers handle different learning paces beautifully.',
-    image: '/avatars/michelle.jpg',
-    initials: 'MK',
+    image: '/avatars/adrien.jpg',
+    initials: 'AD',
   },
   {
     id: 4,
-    name: 'Robert P.',
-    role: 'Parent of Alex, Age 15',
-    text: 'The advanced English program has been perfect for my teenager. The cultural elements included in lessons make it more engaging.',
+    name: 'Mohammed Khalid.',
+    role: 'Business Owner',
+    text: 'كان برنامج اللغة الإنجليزية المتقدم مثاليًا لابني المراهق. العناصر الثقافية المُدرجة في الدروس تجعله أكثر تشويقًا.',
     image: '/avatars/robert.jpg',
     initials: 'RP',
   },
   {
     id: 5,
-    name: 'Lisa T.',
-    role: 'Parent of Sophie, Age 10',
+    name: 'Leena M.',
+    role: 'Parent of Yasmin, Age 10',
     text: "The flexibility of online classes and the quality of teaching is outstanding. We've tried other platforms but this is by far the best.",
     image: '/avatars/lisa.jpg',
-    initials: 'LT',
+    initials: 'LM',
   },
 ]
 

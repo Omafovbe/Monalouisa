@@ -17,10 +17,11 @@ async function createMeeting(roomName?: string) {
           enable_screenshare: true,
           enable_hand_raising: true,
           enable_network_ui: true,
+          enable_recording: 'local',
           enable_prejoin_ui: true,
           enable_emoji_reactions: true,
           enable_video_processing_ui: true,
-          exp: Math.round(Date.now() / 1000) + 60 * 30, // 30 minutes from now
+          exp: Math.round(Date.now() / 1000) + 60 * 40, // 30 minutes from now
         },
       }),
     })
@@ -45,7 +46,8 @@ async function createToken(roomName: string) {
         properties: {
           room_name: roomName,
           is_owner: true,
-          exp: Math.round(Date.now() / 1000) + 60 * 30, // 30 minutes from now
+
+          exp: Math.round(Date.now() / 1000) + 60 * 40, // 30 minutes from now
         },
       }),
     })
