@@ -10,7 +10,7 @@ import {
   Users,
   Calendar,
   BookOpen,
-  Settings,
+  // Settings,
   LogOut,
   Menu,
   X,
@@ -199,12 +199,12 @@ export function Sidebar({ className }: React.HTMLAttributes<HTMLDivElement>) {
 
         {/* Bottom Actions */}
         <div className='absolute bottom-4 px-3 w-full space-y-1'>
-          <Link href={`/${session?.user?.role?.toLowerCase()}/settings`}>
+          {/* <Link href={`/${session?.user?.role?.toLowerCase()}/settings`}>
             <Button variant='ghost' className='w-full justify-start'>
               <Settings className='h-4 w-4 mr-2' />
               Settings
             </Button>
-          </Link>
+          </Link> */}
           <Button
             variant='ghost'
             className='w-full justify-start text-red-500 hover:text-red-600 hover:bg-red-50'
