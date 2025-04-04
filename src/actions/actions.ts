@@ -5,6 +5,14 @@ import { signIn } from '@/lib/auth'
 import { headers } from 'next/headers'
 import { revalidatePath } from 'next/cache'
 import { ApplicationStatus } from '@prisma/client'
+import { nanoid } from 'nanoid'
+import {
+  sendWelcomeEmail,
+  sendTeacherAssignmentEmail,
+  sendStudentAssignmentEmail,
+  sendClassScheduleEmail,
+  sendTeacherOnboardingEmail,
+} from '@/lib/email'
 
 // Add this function to hash passwords
 async function hashPassword(password: string): Promise<string> {
@@ -74,6 +82,8 @@ export async function registerUser(
 
       return user
     })
+
+    await sendWelcomeEmail(email, name || email.split('@')[0])
 
     return { success: true, user: result }
   } catch (error) {
@@ -199,34 +209,105 @@ export async function updateApplicationStatus(
   status: 'APPROVED' | 'REJECTED'
 ) {
   try {
+    let generatedPassword = ''
+    let result
+
     // Use a transaction to update both models
-    const result = await db.$transaction(async (tx) => {
-      // First update the application
-      const application = await tx.teacherApplication.update({
-        where: { id },
-        data: {
-          status,
-          updatedAt: new Date(),
-        },
-        include: {
-          teacher: true,
-        },
-      })
+    if (status === 'APPROVED') {
+      // Generate a secure random password
+      generatedPassword = nanoid(12)
+      const hashedPassword = await hashPassword(generatedPassword)
 
-      // Then update the teacher's status
-      await tx.teacher.update({
-        where: { id: application.teacherId },
-        data: {
-          status,
-          // If approved, set the hire date
-          ...(status === 'APPROVED' && {
+      // Use transaction for all updates
+      result = await db.$transaction(async (tx) => {
+        // First update the application
+        const application = await tx.teacherApplication.update({
+          where: { id },
+          data: {
+            status,
+            updatedAt: new Date(),
+          },
+          include: {
+            teacher: {
+              include: {
+                user: {
+                  select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                  },
+                },
+              },
+            },
+          },
+        })
+
+        // Then update the teacher's status
+        await tx.teacher.update({
+          where: { id: application.teacherId },
+          data: {
+            status,
             hireDate: new Date(),
-          }),
-        },
-      })
+          },
+        })
 
-      return application
-    })
+        // Update the user's password if they don't have one
+        if (application.teacher?.user?.id) {
+          await tx.user.update({
+            where: { id: application.teacher.user.id },
+            data: {
+              password: hashedPassword,
+            },
+          })
+        }
+
+        return application
+      })
+    } else {
+      // For rejected applications, just update the status
+      result = await db.$transaction(async (tx) => {
+        // First update the application
+        const application = await tx.teacherApplication.update({
+          where: { id },
+          data: {
+            status,
+            updatedAt: new Date(),
+          },
+          include: {
+            teacher: {
+              include: {
+                user: {
+                  select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                  },
+                },
+              },
+            },
+          },
+        })
+
+        // Then update the teacher's status
+        await tx.teacher.update({
+          where: { id: application.teacherId },
+          data: {
+            status,
+          },
+        })
+
+        return application
+      })
+    }
+
+    // Send teacher onboarding email if application is approved
+    if (status === 'APPROVED' && result.teacher?.user?.email) {
+      await sendTeacherOnboardingEmail(
+        result.teacher.user.email,
+        result.teacher.user.name || result.name || 'Teacher',
+        generatedPassword
+      )
+    }
 
     revalidatePath('/admin/applications')
     return { success: true, application: result }
@@ -507,16 +588,79 @@ export async function assignStudentsToTeacher(
   studentIds: string[]
 ) {
   try {
-    const result = await db.studentsOnTeachers.createMany({
-      data: studentIds.map((studentId) => ({
-        teacherId,
-        studentId,
-      })),
-      skipDuplicates: true, // Skip if assignment already exists
+    if (!teacherId || !studentIds.length) {
+      return { error: 'Teacher ID and at least one student ID are required' }
+    }
+
+    // Find the teacher to get their name and email
+    const teacher = await db.teacher.findUnique({
+      where: { id: teacherId },
+      include: {
+        user: {
+          select: {
+            name: true,
+            email: true,
+          },
+        },
+      },
     })
 
+    if (!teacher) {
+      return { error: 'Teacher not found' }
+    }
+
+    // Find all students to get their names and emails
+    const students = await db.student.findMany({
+      where: {
+        userId: {
+          in: studentIds,
+        },
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+      },
+    })
+
+    // Create the student-teacher relationships in the database
+    const results = await db.studentsOnTeachers.createMany({
+      data: studentIds.map((studentId) => ({
+        studentId,
+        teacherId,
+      })),
+      skipDuplicates: true,
+    })
+
+    // Send email notification to the teacher
+    const teacherName = teacher.user.name || 'Teacher'
+    const teacherEmail = teacher.user.email || ''
+    const studentNames = students.map(
+      (student) => student.user.name || 'Student'
+    )
+
+    if (teacherEmail) {
+      await sendTeacherAssignmentEmail(teacherEmail, teacherName, studentNames)
+    }
+
+    // Send email notifications to each student
+    for (const student of students) {
+      if (student.user.email) {
+        await sendStudentAssignmentEmail(
+          student.user.email,
+          student.user.name || 'Student',
+          teacherName,
+          teacherEmail
+        )
+      }
+    }
+
     revalidatePath('/admin/teachers')
-    return { success: true, count: result.count }
+    return { success: true, count: results.count }
   } catch (error) {
     console.error('Error assigning students to teacher:', error)
     return { error: 'Failed to assign students to teacher' }
@@ -788,15 +932,48 @@ export async function upsertSchedule({
       }
     }
 
-    // Prepare the data for upsert
-    // const data = {
-    //   teacherId,
-    //   startTime,
-    //   endTime,
-    //   title,
-    //   ...(studentId && { studentId }), // Only include if provided (needed for creation)
-    //   ...(subjectId && { subjectId }), // Only include if provided (needed for creation)
-    // }
+    // Get teacher details
+    const teacher = await db.user.findUnique({
+      where: { id: teacherId },
+      select: { name: true, email: true },
+    })
+
+    if (!teacher) {
+      return { error: 'Teacher not found' }
+    }
+
+    // Get student details
+    let student
+    if (studentId) {
+      const studentRecord = await db.student.findUnique({
+        where: { id: studentId },
+        include: {
+          user: {
+            select: { name: true, email: true },
+          },
+        },
+      })
+
+      if (studentRecord) {
+        student = studentRecord.user
+      }
+    }
+
+    // Get subject details
+    let subjectName = title
+    if (subjectId) {
+      const subject = await db.subject.findUnique({
+        where: { id: subjectId },
+        select: { name: true },
+      })
+
+      if (subject) {
+        subjectName = subject.name
+      }
+    }
+
+    // Determine if this is a new schedule or an update
+    const isNewSchedule = !scheduleId
 
     // Perform upsert operation
     const schedule = await db.schedule.upsert({
@@ -835,6 +1012,23 @@ export async function upsertSchedule({
         },
       },
     })
+
+    // Send email notification for new schedules only
+    if (isNewSchedule && student && student.email) {
+      await sendClassScheduleEmail(
+        student.email,
+        student.name || 'Student',
+        teacher.name || 'Teacher',
+        title,
+        subjectName,
+        startTime,
+        endTime
+      )
+    }
+
+    // Revalidate paths to update UI
+    revalidatePath('/teacher/schedule')
+    revalidatePath('/student/schedule')
 
     return {
       schedule: {

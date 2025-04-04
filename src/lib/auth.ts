@@ -6,7 +6,7 @@ import CredentialsProvider from 'next-auth/providers/credentials'
 import { compare } from 'bcryptjs'
 import { signInSchema } from './validate'
 import { Adapter } from 'next-auth/adapters'
-
+import { sendWelcomeEmail } from './email'
 declare module 'next-auth' {
   interface User {
     role: 'STUDENT' | 'TEACHER' | 'ADMIN'
@@ -98,6 +98,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         }
       }
       return session
+    },
+  },
+  events: {
+    createUser: async ({ user }) => {
+      if (user.email && user.name) {
+        await sendWelcomeEmail(
+          user.email,
+          user.name || user.email.split('@')[0]
+        )
+      }
     },
   },
   pages: {

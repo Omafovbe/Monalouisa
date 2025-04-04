@@ -8,7 +8,7 @@ export function SignOutButton() {
 
   const handleSignOut = async () => {
     await nextAuthSignOut({
-      callbackUrl: '/',
+      callbackUrl: 'api/auth/signin',
       redirect: true,
     })
   }

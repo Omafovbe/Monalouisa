@@ -1,4 +1,5 @@
 // import { SignOutButton } from '@/components/auth/SignOutBtn'
+import { syncExistingUsers } from '@/actions/actions'
 import { OverviewCards } from '@/components/dashboard/overview-cards'
 import { ScheduleTable } from '@/components/dashboard/schedule-table'
 import { StudentProgress } from '@/components/dashboard/student-progress'
@@ -13,6 +14,7 @@ import {
 import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 const StudentDashboard = async () => {
+  await syncExistingUsers()
   const session = await auth()
   const user = session?.user
   if (!user) {
