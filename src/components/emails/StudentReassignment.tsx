@@ -49,9 +49,9 @@ export default function StudentReassignment({
               </Heading>
 
               <Text className='text-gray-700 text-base'>
-                We're writing to inform you about an important change to your
-                language learning journey. Your teacher has been changed from{' '}
-                <strong>{previousTeacherName}</strong> to{' '}
+                We&#39;re writing to inform you about an important change to
+                your language learning journey. Your teacher has been changed
+                from <strong>{previousTeacherName}</strong> to{' '}
                 <strong>{newTeacherName}</strong>.
               </Text>
 

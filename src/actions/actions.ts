@@ -12,7 +12,7 @@ import {
   sendStudentAssignmentEmail,
   sendClassScheduleEmail,
   sendTeacherOnboardingEmail,
-  sendStudentReassignmentEmail,
+  // sendStudentReassignmentEmail,
 } from '@/lib/email'
 
 // Add this function to hash passwords
@@ -1412,7 +1412,8 @@ export async function reassignStudentsToTeacher(
     }
 
     // Start a transaction to perform all database operations
-    const results = await db.$transaction(async (tx) => {
+    // const results =
+    await db.$transaction(async (tx) => {
       // 1. Remove relationships from the old teacher
       await tx.studentsOnTeachers.deleteMany({
         where: {
@@ -1449,8 +1450,8 @@ export async function reassignStudentsToTeacher(
     })
 
     // Get teachable subjects
-    const sourceTeacherSubjects =
-      sourceTeacher.teacherApplication?.teachableSubjects || ''
+    // const sourceTeacherSubjects =
+    // sourceTeacher.teacherApplication?.teachableSubjects || ''
     const targetTeacherSubjects =
       targetTeacher.teacherApplication?.teachableSubjects || ''
 
@@ -1479,7 +1480,7 @@ export async function reassignStudentsToTeacher(
     })
 
     // Prepare data for email
-    const sourceTeacherName = sourceTeacher.user?.name || 'Previous Teacher'
+    // const sourceTeacherName = sourceTeacher.user?.name || 'Previous Teacher'
     const targetTeacherName = targetTeacher.user?.name || 'New Teacher'
     const targetTeacherEmail = targetTeacher.user?.email || ''
     const studentNames = studentData.map((s) => s.name)

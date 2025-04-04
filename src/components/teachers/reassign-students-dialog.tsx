@@ -33,7 +33,7 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
+  //   CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
@@ -190,7 +190,7 @@ export function ReassignStudentsDialog({
         <DialogHeader>
           <DialogTitle>Reassign Students from {currentTeacherName}</DialogTitle>
           <DialogDescription>
-            Select students from {currentTeacherName}'s class to reassign to
+            Select students from {currentTeacherName}&#39;s class to reassign to
             another teacher.
           </DialogDescription>
         </DialogHeader>
