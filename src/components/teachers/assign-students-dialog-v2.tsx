@@ -38,7 +38,7 @@ export function AssignStudentsDialog({
   const [selectedStudents, setSelectedStudents] = useState<string[]>([])
 
   // Fetch unassigned students when dialog is open
-  const { data, isLoading, error, refetch } = useQuery({
+  const { data, isLoading, error } = useQuery({
     queryKey: ['unassignedStudents', teacherId],
     queryFn: () => getUnassignedStudents(teacherId),
     enabled: open, // Only fetch when dialog is open
@@ -58,6 +58,7 @@ export function AssignStudentsDialog({
       onOpenChange(false)
     },
     onError: (error) => {
+      console.error(error)
       toast({
         title: 'Error',
         description: 'Failed to assign students',

@@ -9,14 +9,13 @@ import {
   Img,
   Head,
   Hr,
-  Button,
   Link,
 } from '@react-email/components'
 import { Tailwind } from '@react-email/tailwind'
 
 const baseUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
-  : 'http://localhost:3000'
+  : process.env.NEXT_PUBLIC_APP_URL
 
 export type TeacherAssignmentProps = {
   teacherName: string
@@ -29,7 +28,7 @@ export default function TeacherAssignment({
   studentNames,
   teachableSubjects,
 }: TeacherAssignmentProps) {
-  const studentList = studentNames.map((name) => `- ${name}`).join('\n')
+  // const studentList = studentNames.map((name) => `- ${name}`).join('\n')
 
   return (
     <Html>
@@ -40,6 +39,15 @@ export default function TeacherAssignment({
       <Tailwind>
         <Body className='bg-white font-sans'>
           <Container className='mx-auto py-5 px-5'>
+            <Section className='mt-[32px]'>
+              <Img
+                src={`${baseUrl}/mlt_logo.png`}
+                alt='Monalouisa Teaches Logo'
+                width='170'
+                height='50'
+                className='my-0 mx-auto'
+              />
+            </Section>
             <Heading className='text-2xl font-bold text-center text-gray-800 pt-4'>
               Monalouisa Teaches
             </Heading>

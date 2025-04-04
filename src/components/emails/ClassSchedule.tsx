@@ -37,7 +37,10 @@ export default function ClassSchedule({
   outlookCalendarLink,
 }: ClassScheduleProps) {
   const baseUrl =
-    process.env.NEXT_PUBLIC_APP_URL || 'https://monalouisateaches.com'
+    process.env.NEXT_PUBLIC_APP_URL ||
+    (process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : 'http://localhost:3000')
 
   const formattedDate = format(new Date(startTime), 'EEEE, MMMM d, yyyy')
   const formattedStartTime = format(new Date(startTime), 'h:mm a')

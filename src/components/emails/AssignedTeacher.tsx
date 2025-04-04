@@ -10,13 +10,14 @@ import {
   Head,
   Hr,
   Button,
-  Link,
 } from '@react-email/components'
 import { Tailwind } from '@react-email/tailwind'
 
-const baseUrl = process.env.VERCEL_URL
-  ? `https://${process.env.VERCEL_URL}`
-  : 'http://localhost:3000'
+const baseUrl =
+  process.env.NEXT_PUBLIC_APP_URL ||
+  (process.env.VERCEL_URL
+    ? `https://${process.env.VERCEL_URL}`
+    : 'http://localhost:3000')
 
 export type AssignedTeacherProps = {
   studentName: string
