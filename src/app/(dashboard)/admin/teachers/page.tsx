@@ -15,7 +15,8 @@ import {
 import { useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 import { AssignStudentsDialog } from '@/components/teachers/assign-students-dialog-v2'
-import { UserPlus } from 'lucide-react'
+import { ReassignStudentsDialog } from '@/components/teachers/reassign-students-dialog'
+import { UserPlus, UsersRound } from 'lucide-react'
 
 type StatusType = 'PENDING' | 'APPROVED' | 'REJECTED' | 'ALL'
 
@@ -37,11 +38,15 @@ interface Teacher {
     preferredAgeGroup: string
   } | null
   hireDate: Date | null
+  _count?: {
+    students: number
+  }
 }
 
 const ManageTeachers = () => {
   const [selectedStatus, setSelectedStatus] = useState<StatusType>('ALL')
   const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(null)
+  const [reassignTeacher, setReassignTeacher] = useState<Teacher | null>(null)
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['teachers', selectedStatus],
@@ -88,9 +93,10 @@ const ManageTeachers = () => {
                 <TableHead>Name</TableHead>
                 <TableHead>Email</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead>Experience</TableHead>
+                {/* <TableHead>Experience</TableHead> */}
                 <TableHead>Age Group</TableHead>
                 <TableHead>Hire Date</TableHead>
+                <TableHead>Students</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -108,9 +114,9 @@ const ManageTeachers = () => {
                       {teacher.status.toLowerCase()}
                     </Badge>
                   </TableCell>
-                  <TableCell>
+                  {/* <TableCell>
                     {teacher.teacherApplication?.yearsOfExperience} years
-                  </TableCell>
+                  </TableCell> */}
                   <TableCell>
                     {teacher.teacherApplication?.preferredAgeGroup}
                   </TableCell>
@@ -119,23 +125,38 @@ const ManageTeachers = () => {
                       ? new Date(teacher.hireDate).toLocaleDateString()
                       : '-'}
                   </TableCell>
+                  <TableCell>{teacher._count?.students || 0}</TableCell>
                   <TableCell>
-                    {teacher.status === 'APPROVED' && (
-                      <Button
-                        variant='outline'
-                        size='sm'
-                        onClick={() => setSelectedTeacher(teacher)}
-                      >
-                        <UserPlus className='h-4 w-4 mr-2' />
-                        Assign Students
-                      </Button>
-                    )}
+                    <div className='flex gap-2'>
+                      {teacher.status === 'APPROVED' && (
+                        <Button
+                          variant='outline'
+                          size='sm'
+                          onClick={() => setSelectedTeacher(teacher)}
+                        >
+                          <UserPlus className='h-4 w-4 mr-2' />
+                          Assign
+                        </Button>
+                      )}
+
+                      {teacher.status === 'APPROVED' &&
+                        (teacher._count?.students ?? 0) > 0 && (
+                          <Button
+                            variant='outline'
+                            size='sm'
+                            onClick={() => setReassignTeacher(teacher)}
+                          >
+                            <UsersRound className='h-4 w-4 mr-2' />
+                            Reassign
+                          </Button>
+                        )}
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
               {teachers.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={7} className='text-center'>
+                  <TableCell colSpan={8} className='text-center'>
                     No teachers found
                   </TableCell>
                 </TableRow>
@@ -151,6 +172,15 @@ const ManageTeachers = () => {
           teacherName={selectedTeacher.user.name || 'Unnamed Teacher'}
           open={!!selectedTeacher}
           onOpenChange={(open) => !open && setSelectedTeacher(null)}
+        />
+      )}
+
+      {reassignTeacher && (
+        <ReassignStudentsDialog
+          currentTeacherId={reassignTeacher.id}
+          currentTeacherName={reassignTeacher.user.name || 'Current Teacher'}
+          open={!!reassignTeacher}
+          onOpenChange={(open) => !open && setReassignTeacher(null)}
         />
       )}
     </div>
