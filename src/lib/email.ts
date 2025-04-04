@@ -5,6 +5,7 @@ import AssignedTeacher from '@/components/emails/AssignedTeacher'
 import TeacherAssignment from '@/components/emails/TeacherAssignment'
 import ClassSchedule from '@/components/emails/ClassSchedule'
 import TeacherOnboarding from '@/components/emails/TeacherOnboarding'
+import StudentReassignment from '@/components/emails/StudentReassignment'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
@@ -225,6 +226,43 @@ export async function sendClassScheduleEmail(
     return { success: true, data }
   } catch (error) {
     console.error('Error sending class schedule email:', error)
+    return { success: false, error }
+  }
+}
+
+export async function sendStudentReassignmentEmail(
+  studentEmail: string,
+  studentName: string,
+  previousTeacherName: string,
+  newTeacherName: string,
+  newTeacherEmail?: string,
+  matchingSubjects?: string
+) {
+  try {
+    const html = await render(
+      StudentReassignment({
+        studentName,
+        previousTeacherName,
+        newTeacherName,
+        newTeacherEmail,
+        matchingSubjects,
+      })
+    )
+
+    const { data, error } = await resend.emails.send({
+      from: 'Monalouisa Teaches <no-reply@monalouisateaches.com>',
+      to: studentEmail,
+      subject: 'Important: Your Language Teacher Has Changed',
+      html,
+    })
+
+    if (error) {
+      console.error('Error sending student reassignment email:', error)
+      return { success: false, error: error.message }
+    }
+    return { success: true, data }
+  } catch (error) {
+    console.error('Error sending student reassignment email:', error)
     return { success: false, error }
   }
 }

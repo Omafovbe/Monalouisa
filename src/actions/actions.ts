@@ -12,6 +12,7 @@ import {
   sendStudentAssignmentEmail,
   sendClassScheduleEmail,
   sendTeacherOnboardingEmail,
+  // sendStudentReassignmentEmail,
 } from '@/lib/email'
 
 // Add this function to hash passwords
@@ -335,17 +336,23 @@ export async function getTeachers(status?: ApplicationStatus) {
           select: {
             yearsOfExperience: true,
             preferredAgeGroup: true,
+            teachableSubjects: true,
+          },
+        },
+        _count: {
+          select: {
+            students: true,
           },
         },
       },
       orderBy: {
-        createdAt: 'desc',
+        updatedAt: 'desc',
       },
     })
-    return { teachers }
+    return { teachers, error: null }
   } catch (error) {
     console.error('Error fetching teachers:', error)
-    return { error: 'Failed to fetch teachers' }
+    return { teachers: [], error: 'Failed to fetch teachers' }
   }
 }
 
@@ -831,6 +838,11 @@ export async function getTeacherStudents(userId: string) {
                 email: true,
               },
             },
+            StudentsOnSubjects: {
+              include: {
+                subject: true,
+              },
+            },
           },
         },
       },
@@ -840,12 +852,22 @@ export async function getTeacherStudents(userId: string) {
       return { students: [] }
     }
 
-    const formattedStudents = students.map(({ student, assignedAt }) => ({
-      id: student.id,
-      name: student.user.name,
-      email: student.user.email,
-      assignedAt,
-    }))
+    const formattedStudents = students.map(({ student, assignedAt }) => {
+      // Extract subjects from StudentsOnSubjects
+      const subjects =
+        student.StudentsOnSubjects?.map(
+          (enrollment) => enrollment.subject.name
+        ) || []
+
+      return {
+        id: student.id,
+        name: student.user.name,
+        email: student.user.email,
+        assignedAt,
+        subjects,
+      }
+    })
+
     console.log('Formatted students:', formattedStudents)
     return { students: formattedStudents }
   } catch (error) {
@@ -1293,5 +1315,203 @@ export async function getAllSchedules() {
   } catch (error) {
     console.log('error', error)
     return { error: 'Failed to fetch schedules', schedules: [] }
+  }
+}
+
+/**
+ * Reassigns students from one teacher to another
+ * This is useful when a teacher leaves or when we need to balance teacher workloads
+ */
+export async function reassignStudentsToTeacher(
+  fromTeacherId: number,
+  toTeacherId: number,
+  studentIds: string[]
+) {
+  try {
+    if (!fromTeacherId || !toTeacherId || !studentIds.length) {
+      return {
+        error:
+          'Source teacher, target teacher, and at least one student ID are required',
+      }
+    }
+
+    // Get details for the source and target teachers
+    const sourceTeacherResult = await db.teacher.findUnique({
+      where: { id: fromTeacherId },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+        teacherApplication: {
+          select: {
+            teachableSubjects: true,
+          },
+        },
+      },
+    })
+
+    const targetTeacherResult = await db.teacher.findUnique({
+      where: { id: toTeacherId },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+        teacherApplication: {
+          select: {
+            teachableSubjects: true,
+          },
+        },
+      },
+    })
+
+    if (!sourceTeacherResult || !targetTeacherResult) {
+      return { error: 'One or both teachers not found' }
+    }
+
+    const sourceTeacher = sourceTeacherResult
+    const targetTeacher = targetTeacherResult
+
+    // Get students with their subjects
+    const students = await db.student.findMany({
+      where: {
+        id: {
+          in: studentIds,
+        },
+        teachers: {
+          some: {
+            teacherId: fromTeacherId,
+          },
+        },
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+        StudentsOnSubjects: {
+          include: {
+            subject: true,
+          },
+        },
+      },
+    })
+
+    if (students.length === 0) {
+      return { error: 'No valid students found for reassignment' }
+    }
+
+    // Start a transaction to perform all database operations
+    // const results =
+    await db.$transaction(async (tx) => {
+      // 1. Remove relationships from the old teacher
+      await tx.studentsOnTeachers.deleteMany({
+        where: {
+          teacherId: fromTeacherId,
+          studentId: {
+            in: studentIds,
+          },
+        },
+      })
+
+      // 2. Create relationships with the new teacher
+      await tx.studentsOnTeachers.createMany({
+        data: studentIds.map((studentId) => ({
+          studentId,
+          teacherId: toTeacherId,
+        })),
+        skipDuplicates: true,
+      })
+
+      // 3. Update any scheduled classes to point to the new teacher
+      await tx.schedule.updateMany({
+        where: {
+          studentId: {
+            in: studentIds,
+          },
+          teacherId: sourceTeacher.userId,
+        },
+        data: {
+          teacherId: targetTeacher.userId,
+        },
+      })
+
+      return { success: true, count: studentIds.length }
+    })
+
+    // Get teachable subjects
+    // const sourceTeacherSubjects =
+    // sourceTeacher.teacherApplication?.teachableSubjects || ''
+    const targetTeacherSubjects =
+      targetTeacher.teacherApplication?.teachableSubjects || ''
+
+    // Get student data for notifications
+    const studentData = students.map((student) => {
+      const enrolledSubjects = student.StudentsOnSubjects.map(
+        (enrollment) => enrollment.subject.name
+      ).join(', ')
+
+      // Find matching subjects with the target teacher
+      const matchingSubjects = student.StudentsOnSubjects.filter((enrollment) =>
+        targetTeacherSubjects
+          .toLowerCase()
+          .includes(enrollment.subject.name.toLowerCase())
+      )
+        .map((enrollment) => enrollment.subject.name)
+        .join(', ')
+
+      return {
+        id: student.id,
+        name: student.user?.name || 'Student',
+        email: student.user?.email,
+        subjects: enrolledSubjects,
+        matchingSubjects: matchingSubjects || 'None',
+      }
+    })
+
+    // Prepare data for email
+    // const sourceTeacherName = sourceTeacher.user?.name || 'Previous Teacher'
+    const targetTeacherName = targetTeacher.user?.name || 'New Teacher'
+    const targetTeacherEmail = targetTeacher.user?.email || ''
+    const studentNames = studentData.map((s) => s.name)
+
+    // Send email notification to the target teacher
+    if (targetTeacherEmail) {
+      await sendTeacherAssignmentEmail(
+        targetTeacherEmail,
+        targetTeacherName,
+        studentNames,
+        targetTeacherSubjects
+      )
+    }
+
+    // Send email notifications to each student
+    for (const student of studentData) {
+      if (student.email) {
+        await sendStudentAssignmentEmail(
+          student.email,
+          student.name,
+          targetTeacherName,
+          targetTeacherEmail,
+          student.matchingSubjects
+        )
+      }
+    }
+
+    revalidatePath('/admin/teachers')
+    return { success: true, count: studentIds.length }
+  } catch (error) {
+    console.error('Error reassigning students:', error)
+    return { error: 'Failed to reassign students' }
   }
 }
