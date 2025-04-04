@@ -105,6 +105,7 @@ export async function submitTeacherApplication(formData: {
   yearsOfExperience: number
   preferredAgeGroup: string
   teachingStyle: string
+  teachableSubjects: string
   videoUrl: string
 }) {
   try {
@@ -149,6 +150,7 @@ export async function submitTeacherApplication(formData: {
         yearsOfExperience: formData.yearsOfExperience,
         preferredAgeGroup: formData.preferredAgeGroup,
         teachingStyle: formData.teachingStyle,
+        teachableSubjects: formData.teachableSubjects,
         videoUrl: formData.videoUrl,
         status: 'PENDING',
       },
@@ -592,7 +594,7 @@ export async function assignStudentsToTeacher(
       return { error: 'Teacher ID and at least one student ID are required' }
     }
 
-    // Find the teacher to get their name and email
+    // Find the teacher to get their name, email, and teachable subjects
     const teacher = await db.teacher.findUnique({
       where: { id: teacherId },
       include: {
@@ -602,6 +604,11 @@ export async function assignStudentsToTeacher(
             email: true,
           },
         },
+        teacherApplication: {
+          select: {
+            teachableSubjects: true,
+          },
+        },
       },
     })
 
@@ -609,7 +616,14 @@ export async function assignStudentsToTeacher(
       return { error: 'Teacher not found' }
     }
 
-    // Find all students to get their names and emails
+    // Parse teachable subjects
+    const teachableSubjects = teacher.teacherApplication?.teachableSubjects
+      ? teacher.teacherApplication.teachableSubjects
+          .split(',')
+          .map((s) => s.trim())
+      : []
+
+    // Find all students to get their names, emails, and enrolled subjects
     const students = await db.student.findMany({
       where: {
         userId: {
@@ -624,6 +638,11 @@ export async function assignStudentsToTeacher(
             email: true,
           },
         },
+        StudentsOnSubjects: {
+          include: {
+            subject: true,
+          },
+        },
       },
     })
 
@@ -636,25 +655,56 @@ export async function assignStudentsToTeacher(
       skipDuplicates: true,
     })
 
-    // Send email notification to the teacher
-    const teacherName = teacher.user.name || 'Teacher'
-    const teacherEmail = teacher.user.email || ''
-    const studentNames = students.map(
-      (student) => student.user.name || 'Student'
-    )
+    // Add subject information to the email context
+    const teacherName = teacher.user?.name || 'Teacher'
+    const teacherEmail = teacher.user?.email || ''
 
+    // Get student names and their enrolled subjects
+    const studentData = students.map((student) => {
+      const enrolledSubjects = student.StudentsOnSubjects.map(
+        (enrollment) => enrollment.subject.name
+      ).join(', ')
+
+      // Find matching subjects between teacher and student
+      const matchingSubjects = student.StudentsOnSubjects.filter((enrollment) =>
+        teachableSubjects.some((teachable) =>
+          enrollment.subject.name
+            .toLowerCase()
+            .includes(teachable.toLowerCase())
+        )
+      )
+        .map((enrollment) => enrollment.subject.name)
+        .join(', ')
+
+      return {
+        name: student.user?.name || 'Student',
+        email: student.user?.email,
+        subjects: enrolledSubjects,
+        matchingSubjects: matchingSubjects || 'None',
+      }
+    })
+
+    const studentNames = studentData.map((s) => s.name)
+
+    // Send email notification to the teacher
     if (teacherEmail) {
-      await sendTeacherAssignmentEmail(teacherEmail, teacherName, studentNames)
+      await sendTeacherAssignmentEmail(
+        teacherEmail,
+        teacherName,
+        studentNames,
+        teachableSubjects.join(', ')
+      )
     }
 
     // Send email notifications to each student
-    for (const student of students) {
-      if (student.user.email) {
+    for (const student of studentData) {
+      if (student.email) {
         await sendStudentAssignmentEmail(
-          student.user.email,
-          student.user.name || 'Student',
+          student.email,
+          student.name,
           teacherName,
-          teacherEmail
+          teacherEmail,
+          student.matchingSubjects
         )
       }
     }
@@ -669,6 +719,28 @@ export async function assignStudentsToTeacher(
 
 export async function getUnassignedStudents(teacherId: number) {
   try {
+    // First, get the teacher and their teachable subjects
+    const teacher = await db.teacher.findUnique({
+      where: { id: teacherId },
+      include: {
+        user: true,
+        teacherApplication: {
+          select: {
+            teachableSubjects: true,
+          },
+        },
+      },
+    })
+
+    if (!teacher || !teacher.teacherApplication) {
+      return { error: 'Teacher not found or application not available' }
+    }
+
+    // Parse the teachable subjects
+    const teachableSubjects = teacher.teacherApplication.teachableSubjects
+      .split(',')
+      .map((subject: string) => subject.trim().toLowerCase())
+
     // Get students not assigned to this teacher
     const students = await db.student.findMany({
       where: {
@@ -687,9 +759,45 @@ export async function getUnassignedStudents(teacherId: number) {
             email: true,
           },
         },
+        StudentsOnSubjects: {
+          include: {
+            subject: true,
+          },
+        },
       },
     })
-    return { students }
+
+    // Filter and format students with their enrolled subjects
+    const studentsWithSubjects = students.map((student) => {
+      const enrolledSubjects = student.StudentsOnSubjects.map((enrollment) => ({
+        id: enrollment.subjectId,
+        name: enrollment.subject.name,
+      }))
+
+      // Check if the student is enrolled in at least one subject the teacher can teach
+      const matchingSubjects = enrolledSubjects.filter((subject) =>
+        teachableSubjects.some((teachable: string) =>
+          subject.name.toLowerCase().includes(teachable)
+        )
+      )
+
+      return {
+        id: student.id,
+        user: student.user,
+        enrolledSubjects,
+        matchingSubjects,
+        isMatch: matchingSubjects.length > 0,
+      }
+    })
+
+    // Sort students: first those with matching subjects, then others
+    const sortedStudents = studentsWithSubjects.sort((a, b) => {
+      if (a.isMatch && !b.isMatch) return -1
+      if (!a.isMatch && b.isMatch) return 1
+      return 0
+    })
+
+    return { students: sortedStudents }
   } catch (error) {
     console.error('Error fetching unassigned students:', error)
     return { error: 'Failed to fetch unassigned students' }

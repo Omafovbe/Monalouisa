@@ -93,13 +93,15 @@ export async function sendTeacherOnboardingEmail(
 export async function sendTeacherAssignmentEmail(
   teacherEmail: string,
   teacherName: string,
-  studentNames: string[]
+  studentNames: string[],
+  teachableSubjects?: string
 ) {
   try {
     const html = await render(
       TeacherAssignment({
         teacherName,
         studentNames,
+        teachableSubjects,
       })
     )
 
@@ -125,7 +127,8 @@ export async function sendStudentAssignmentEmail(
   studentEmail: string,
   studentName: string,
   teacherName: string,
-  teacherEmail?: string
+  teacherEmail?: string,
+  matchingSubjects?: string
 ) {
   try {
     const html = await render(
@@ -133,6 +136,7 @@ export async function sendStudentAssignmentEmail(
         studentName,
         teacherName,
         teacherEmail,
+        matchingSubjects,
       })
     )
 
