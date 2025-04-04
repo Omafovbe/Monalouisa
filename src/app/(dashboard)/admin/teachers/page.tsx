@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/table'
 import { useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
-import { AssignStudentsDialog } from '@/components/teachers/assign-students-dialog'
+import { AssignStudentsDialog } from '@/components/teachers/assign-students-dialog-v2'
 import { UserPlus } from 'lucide-react'
 
 type StatusType = 'PENDING' | 'APPROVED' | 'REJECTED' | 'ALL'

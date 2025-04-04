@@ -86,6 +86,10 @@ export default function ApplicationPage({
           </CardHeader>
           <CardContent className='space-y-4'>
             <div>
+              <h3 className='font-semibold'>Subject to Teach</h3>
+              <p>{application.teachableSubjects}</p>
+            </div>
+            <div>
               <h3 className='font-semibold'>Years of Experience</h3>
               <p>{application.yearsOfExperience} years</p>
             </div>

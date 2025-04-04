@@ -5,6 +5,13 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import {
   Form,
   FormControl,
   FormDescription,
@@ -16,10 +23,11 @@ import {
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import * as z from 'zod'
-import { submitTeacherApplication } from '@/actions/actions'
+import { getSubjects, submitTeacherApplication } from '@/actions/actions'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { useToast } from '@/hooks/use-toast'
+import { useQuery } from '@tanstack/react-query'
 // import Navbar from '../Navbar'
 // import Footer from '../footer2'
 
@@ -33,6 +41,9 @@ const formSchema = z.object({
     .min(2, 'Minimum 2 years of experience required'),
   preferredAgeGroup: z.string().min(1, 'Please select preferred age group'),
   teachingStyle: z.string().min(50, 'Please provide a detailed description'),
+  teachableSubjects: z
+    .string()
+    .min(1, 'Please select at least one subject you can teach'),
   videoUrl: z.string().url('Please provide a valid video URL'),
 })
 
@@ -40,6 +51,15 @@ export function TeachPage() {
   const { toast } = useToast()
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  // Fetch available subjects
+  const { data: subjectsData, isLoading: isLoadingSubjects } = useQuery({
+    queryKey: ['subjects'],
+    queryFn: getSubjects,
+  })
+
+  const subjects = subjectsData?.subjects || []
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -47,9 +67,10 @@ export function TeachPage() {
       email: '',
       phone: '',
       qualifications: '',
-      yearsOfExperience: 2,
+      yearsOfExperience: 1,
       preferredAgeGroup: '',
       teachingStyle: '',
+      teachableSubjects: '',
       videoUrl: '',
     },
   })
@@ -209,6 +230,47 @@ export function TeachPage() {
                     <FormControl>
                       <Input {...field} placeholder='e.g., 4-8, 9-12, 13-18' />
                     </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name='teachableSubjects'
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Subjects You Can Teach</FormLabel>
+                    <FormControl>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <SelectTrigger className='w-full'>
+                          <SelectValue placeholder='Select a subject you can teach' />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {isLoadingSubjects ? (
+                            <SelectItem value='loading' disabled>
+                              Loading subjects...
+                            </SelectItem>
+                          ) : subjects.length > 0 ? (
+                            subjects.map((subject) => (
+                              <SelectItem key={subject.id} value={subject.name}>
+                                {subject.name}
+                              </SelectItem>
+                            ))
+                          ) : (
+                            <SelectItem value='no-subjects' disabled>
+                              No subjects available
+                            </SelectItem>
+                          )}
+                        </SelectContent>
+                      </Select>
+                    </FormControl>
+                    <FormDescription>
+                      Choose a subject you are qualified to teach
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}

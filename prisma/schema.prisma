@@ -165,6 +165,7 @@ model TeacherApplication {
     yearsOfExperience Int
     preferredAgeGroup String
     teachingStyle     String            @db.Text
+    teachableSubjects String            @default("Arabic") @db.Text
     videoUrl          String
     reviewedBy        String? // Admin who reviewed the application
     reviewNotes       String?           @db.Text
