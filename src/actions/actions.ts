@@ -110,7 +110,15 @@ export async function submitTeacherApplication(formData: {
   videoUrl: string
 }) {
   try {
-    // Check if user/application already exists
+    // 1. First, validate all required inputs
+    if (!formData.name || !formData.email || !formData.phone) {
+      return {
+        success: false,
+        error: 'Missing required fields',
+      }
+    }
+
+    // 2. Check if user/application already exists
     const existingUser = await db.user.findUnique({
       where: { email: formData.email },
     })
@@ -122,45 +130,51 @@ export async function submitTeacherApplication(formData: {
       }
     }
 
-    // Create user with teacher role
-    const user = await db.user.create({
-      data: {
-        name: formData.name,
-        email: formData.email,
-        role: 'TEACHER',
-      },
-    })
+    // 3. Create all records in a single transaction for atomicity
+    // If any part fails, all changes will be rolled back
+    const result = await db.$transaction(async (tx) => {
+      // Create user with teacher role
+      const user = await tx.user.create({
+        data: {
+          name: formData.name,
+          email: formData.email,
+          role: 'TEACHER',
+        },
+      })
 
-    // Create teacher profile
-    const teacher = await db.teacher.create({
-      data: {
-        userId: user.id,
-        phone: formData.phone,
-        status: 'PENDING',
-      },
-    })
+      // Create teacher profile linked to the user
+      const teacher = await tx.teacher.create({
+        data: {
+          userId: user.id,
+          phone: formData.phone,
+          status: 'PENDING',
+        },
+      })
 
-    // Create teacher application
-    const application = await db.teacherApplication.create({
-      data: {
-        teacherId: teacher.id,
-        name: formData.name,
-        email: formData.email,
-        phone: formData.phone,
-        qualifications: formData.qualifications,
-        yearsOfExperience: formData.yearsOfExperience,
-        preferredAgeGroup: formData.preferredAgeGroup,
-        teachingStyle: formData.teachingStyle,
-        teachableSubjects: formData.teachableSubjects,
-        videoUrl: formData.videoUrl,
-        status: 'PENDING',
-      },
+      // Create teacher application linked to the teacher
+      const application = await tx.teacherApplication.create({
+        data: {
+          teacherId: teacher.id,
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          qualifications: formData.qualifications,
+          yearsOfExperience: formData.yearsOfExperience,
+          preferredAgeGroup: formData.preferredAgeGroup,
+          teachingStyle: formData.teachingStyle,
+          teachableSubjects: formData.teachableSubjects,
+          videoUrl: formData.videoUrl,
+          status: 'PENDING',
+        },
+      })
+
+      return application
     })
 
     revalidatePath('/admin/applications')
     return {
       success: true,
-      data: application,
+      data: result,
       message: 'Application submitted successfully',
     }
   } catch (error) {
