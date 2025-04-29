@@ -3,7 +3,7 @@
 import axios from 'axios'
 
 const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY
-const PAYSTACK_PUBLIC_KEY = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY
+// const PAYSTACK_PUBLIC_KEY = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY
 const PAYSTACK_BASE_URL = 'https://api.paystack.co'
 
 const planCodeMap = {
@@ -75,20 +75,20 @@ export async function initializePaystackTransaction(
   }
 }
 
-function calculateAmount(packageName: string, billingType: string): number {
-  const packagePrices = {
-    basic: 5000,
-    standard: 10000,
-    premium: 15000,
-  }
+// function calculateAmount(packageName: string, billingType: string): number {
+//   const packagePrices = {
+//     basic: 5000,
+//     standard: 10000,
+//     premium: 15000,
+//   }
 
-  const basePrice =
-    packagePrices[packageName as keyof typeof packagePrices] || 0
-  const yearlyDiscount = billingType === 'yearly' ? 0.8 : 1
-  const months = billingType === 'yearly' ? 12 : 1
+//   const basePrice =
+//     packagePrices[packageName as keyof typeof packagePrices] || 0
+//   const yearlyDiscount = billingType === 'yearly' ? 0.8 : 1
+//   const months = billingType === 'yearly' ? 12 : 1
 
-  return basePrice * yearlyDiscount * months
-}
+//   return basePrice * yearlyDiscount * months
+// }
 
 export async function verifyPaystackTransaction(reference: string) {
   try {

@@ -36,6 +36,7 @@ export default function PaystackCallbackPage() {
           setMessage('Payment verification failed. Please try again.')
         }
       } catch (error) {
+        console.error(error)
         setStatus('error')
         setMessage('An error occurred while verifying your payment.')
       }

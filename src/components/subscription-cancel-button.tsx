@@ -25,6 +25,7 @@ export function SubscriptionCancelButton({
         description: result.message,
       })
     } catch (error) {
+      console.error('error', error)
       toast({
         title: 'Error',
         description: 'Failed to cancel subscription',
