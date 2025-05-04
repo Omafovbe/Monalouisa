@@ -26,6 +26,7 @@ export default function PaystackCallbackPage() {
     const verifyPayment = async () => {
       try {
         const result = await verifyPaystackTransaction(reference)
+
         if (result.success) {
           setStatus('success')
           setMessage(

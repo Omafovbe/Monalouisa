@@ -1,6 +1,7 @@
 'use server'
 
 import axios from 'axios'
+import db from '@/lib/db'
 
 const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY
 // const PAYSTACK_PUBLIC_KEY = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY
@@ -22,19 +23,36 @@ const planCodeMap = {
 }
 
 export async function initializePaystackTransaction(
+  userId: string,
   packageName: string,
   billingType: string
 ) {
   try {
-    // Calculate the amount based on package and billing type
-    // const amount = calculateAmount(packageName, billingType)
+    // Get the student record
+    const student = await db.student.findFirst({
+      where: { userId },
+      include: { subscription: true },
+    })
+
+    if (!student) {
+      return { error: 'Student not found' }
+    }
+
+    // Get user details
+    const user = await db.user.findUnique({
+      where: { id: userId },
+    })
+
+    if (!user || !user.email) {
+      return { error: 'User email not found' }
+    }
 
     // Get Paystack plan code
     const planCode =
       planCodeMap[packageName as keyof typeof planCodeMap]?.[
         billingType as 'standard' | 'premium'
       ]
-    console.log(planCode)
+    console.log(planCode, packageName, billingType)
     if (!planCode) {
       throw new Error('Invalid package or billing type')
     }
@@ -42,17 +60,65 @@ export async function initializePaystackTransaction(
     // Create a unique reference for the transaction
     const reference = `ref_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
 
+    // Create or get Paystack customer
+    let customerCode = student.subscription?.paystackCustomerCode
+    let customerId = student.subscription?.paystackCustomerId
+
+    if (!customerCode) {
+      const customerResponse = await axios.post(
+        `${PAYSTACK_BASE_URL}/customer`,
+        {
+          email: user.email,
+          first_name: user.name?.split(' ')[0],
+          last_name: user.name?.split(' ')[1] || '',
+          metadata: {
+            userId,
+            studentId: student.id,
+          },
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      )
+
+      customerCode = customerResponse.data.data.customer_code
+      customerId = customerResponse.data.data.id
+    }
+
+    // Create or update subscription record
+    await db.subscription.upsert({
+      where: { studentId: student.id },
+      create: {
+        studentId: student.id,
+        packageName,
+        billingType,
+        status: 'pending',
+        paystackCustomerCode: customerCode,
+        paystackCustomerId: customerId,
+        paystackSubscriptionCode: null, // Will be updated after successful payment
+      },
+      update: {
+        packageName,
+        billingType,
+      },
+    })
+
     // Initialize the transaction
     const response = await axios.post(
       `${PAYSTACK_BASE_URL}/transaction/initialize`,
       {
-        email: 'you@test.com', // Replace with actual user email
+        email: user.email,
         plan: planCode,
         amount: 10200000,
         reference,
-        callback_url: `${process.env.NEXT_PUBLIC_APP_URL}/student/paystack-test/callback`,
+        callback_url: `${process.env.NEXT_PUBLIC_APP_URL}/student/payments`,
         webhook_url: `${process.env.NEXT_PUBLIC_APP_URL}/api/paystack/webhook`,
         metadata: {
+          userId,
+          studentId: student.id,
           packageName,
           billingType,
         },
@@ -71,7 +137,10 @@ export async function initializePaystackTransaction(
     }
   } catch (error) {
     console.error('Error initializing Paystack transaction:', error)
-    throw new Error('Failed to initialize payment')
+    return {
+      error:
+        error instanceof Error ? error.message : 'Failed to initialize payment',
+    }
   }
 }
 
@@ -101,23 +170,73 @@ export async function verifyPaystackTransaction(reference: string) {
       }
     )
 
+    const transaction = response.data.data
+
+    if (transaction.status === 'success') {
+      // Get the customer ID from the transaction
+      const customerId = transaction.customer.id
+
+      // Get the subscription details for this customer
+      const subscriptionResponse = await axios.get(
+        `${PAYSTACK_BASE_URL}/subscription?customer=${customerId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
+          },
+        }
+      )
+
+      const subscriptions = subscriptionResponse.data.data
+      const latestSubscription = subscriptions[0] // Get the most recent subscription
+
+      console.log('lastest sub: ', latestSubscription)
+
+      if (latestSubscription) {
+        // Update the subscription record with active status and subscription code
+        await db.subscription.update({
+          where: {
+            paystackCustomerId: customerId,
+            studentId: transaction.metadata.studentId,
+          },
+          data: {
+            status: 'active',
+            paystackSubscriptionCode: latestSubscription.subscription_code,
+            paystackEmailToken: latestSubscription.email_token,
+          },
+        })
+      }
+
+      return {
+        success: true,
+        data: transaction,
+        subscription: latestSubscription,
+      }
+    }
+
     return {
-      success: response.data.data.status === 'success',
-      data: response.data.data,
+      success: false,
+      data: transaction,
     }
   } catch (error) {
     console.error('Error verifying Paystack transaction:', error)
-    throw new Error('Failed to verify payment')
+    return {
+      success: false,
+      error:
+        error instanceof Error ? error.message : 'Failed to verify payment',
+    }
   }
 }
 
-export async function cancelPaystackSubscription(subscriptionCode: string) {
+export async function cancelPaystackSubscription(
+  subscriptionCode: string,
+  emailCode: string
+) {
   try {
     const response = await axios.post(
       `${PAYSTACK_BASE_URL}/subscription/disable`,
       {
         code: subscriptionCode,
-        token: PAYSTACK_SECRET_KEY,
+        token: emailCode,
       },
       {
         headers: {
@@ -134,6 +253,103 @@ export async function cancelPaystackSubscription(subscriptionCode: string) {
     }
   } catch (error) {
     console.error('Error cancelling subscription:', error)
-    throw new Error('Failed to cancel subscription')
+    return {
+      success: false,
+      error:
+        error instanceof Error
+          ? error.message
+          : 'Failed to cancel subscription',
+      data: null,
+    }
+  }
+}
+
+export async function getSubscription(userId: string) {
+  if (!userId) {
+    return {
+      status: 'NO_SUBSCRIPTION',
+      subscription: null,
+      error: 'User ID is required',
+    }
+  }
+
+  try {
+    const student = await db.student.findFirst({
+      where: { userId },
+      include: { subscription: true },
+    })
+
+    if (!student) {
+      return {
+        status: 'NO_SUBSCRIPTION',
+        subscription: null,
+        error: 'Student record not found',
+      }
+    }
+    // console.log('student', student)
+    // Return null if no subscription exists
+    if (!student.subscription) {
+      return {
+        status: 'NO_SUBSCRIPTION',
+        subscription: null,
+      }
+    }
+
+    return {
+      status: 'HAS_SUBSCRIPTION',
+      subscription: student.subscription,
+    }
+  } catch (error) {
+    console.error('Error fetching subscription:', error)
+    return {
+      status: 'NO_SUBSCRIPTION',
+      subscription: null,
+      error:
+        error instanceof Error ? error.message : 'Failed to fetch subscription',
+    }
+  }
+}
+
+export async function getPaystackSubscriptionDetails(subscriptionCode: string) {
+  try {
+    const response = await axios.get(
+      `${PAYSTACK_BASE_URL}/subscription/${subscriptionCode}`,
+      {
+        headers: {
+          Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
+        },
+      }
+    )
+
+    const subscription = response.data.data
+    // console.log('subscription details:- ', subscription)
+    return {
+      success: true,
+      details: {
+        currentPeriodEnd: new Date(subscription.next_payment_date),
+        cancelAtPeriodEnd: subscription.status === 'cancelled',
+        status: subscription.status,
+        nextPaymentAmount: subscription.amount
+          ? (subscription.amount / 100).toFixed(2)
+          : null,
+        currency: subscription.plan.currency,
+        plan: {
+          name: subscription.plan.name,
+          amount: subscription.plan.amount
+            ? (subscription.plan.amount / 100).toFixed(2)
+            : null,
+          interval: subscription.plan.interval,
+        },
+      },
+    }
+  } catch (error) {
+    console.error('Error retrieving Paystack subscription details:', error)
+    return {
+      success: false,
+      error:
+        error instanceof Error
+          ? error.message
+          : 'Failed to retrieve subscription details',
+    }
   }
 }

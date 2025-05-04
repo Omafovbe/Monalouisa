@@ -18,11 +18,11 @@ import { Check } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import {
   getSubscription,
-  initializePaystackTransaction,
-  verifyPaystackTransaction,
-  cancelPaystackSubscription,
-  getPaystackSubscriptionDetails,
-} from '@/actions/paystack-actions'
+  createCheckoutSession,
+  handleSuccessfulPayment,
+  cancelSubscription,
+  getSubscriptionDetails,
+} from '@/actions/stripe-actions'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { toast } from '@/hooks/use-toast'
 import { format } from 'date-fns'
@@ -51,11 +51,6 @@ interface SubscriptionDetails {
   status: string
   nextPaymentAmount: string | null
   currency: string
-  plan: {
-    name: string
-    amount: string | null
-    interval: string
-  }
 }
 
 interface SubscriptionDetailsResponse {
@@ -82,94 +77,119 @@ export default function PaymentsPage() {
 
   // Check for success/canceled status
   const success = searchParams.get('success')
-  const reference = searchParams.get('reference')
+  const canceled = searchParams.get('canceled')
 
   // Handle successful payment
   useEffect(() => {
-    if (reference) {
-      verifyPaystackTransaction(reference)
-        .then((result) => {
-          console.log('result', result)
-          if (result.error) {
+    if (success) {
+      const sessionId = searchParams.get('session_id')
+      if (sessionId) {
+        handleSuccessfulPayment(sessionId)
+          .then((result) => {
+            if (result.error) {
+              toast({
+                title: 'Error',
+                description: result.error,
+                variant: 'destructive',
+              })
+            } else {
+              toast({
+                title: 'Success',
+                description: 'Your subscription is now active.',
+              })
+            }
+          })
+          .catch((error) => {
+            console.log('error', error)
             toast({
               title: 'Error',
-              description: result.error,
+              description: 'Failed to process payment',
               variant: 'destructive',
             })
-          } else {
-            toast({
-              title: 'Success',
-              description: 'Your subscription is now active.',
-            })
-          }
-        })
-        .catch((error) => {
-          console.log('error', error)
-          toast({
-            title: 'Error',
-            description: 'Failed to process payment',
-            variant: 'destructive',
           })
-        })
-        .finally(() => {
-          router.replace('/student/payments') // Remove query params
-        })
+          .finally(() => {
+            router.replace('/student/payments') // Remove query params
+          })
+      }
     }
-  }, [success, reference, router])
+    if (canceled) {
+      toast({
+        title: 'Payment canceled',
+        description: 'Please try again',
+        variant: 'destructive',
+      })
+      router.replace('/student/payments') // Remove query params
+    }
+  }, [success, canceled, searchParams, router])
 
   // Fetch current subscription
-  const { data: subscriptionData, isLoading: isLoadingSubscription } = useQuery(
-    {
-      queryKey: ['subscription', session?.user?.id],
-      queryFn: async () => {
-        if (!session?.user?.id) return null
-        return getSubscription(session.user.id)
-      },
-      enabled: !!session?.user?.id,
-    }
-  )
+  const {
+    data: subscriptionData,
+    isLoading: isLoadingSubscription,
+    // error: subscriptionError,
+  } = useQuery({
+    queryKey: ['subscription', session?.user?.id],
+    queryFn: async () => {
+      if (!session?.user?.id) return null
+      return getSubscription(session.user.id)
+    },
+    enabled: !!session?.user?.id,
+  })
 
   // const hasActiveSubscription = Boolean(
   //   subscriptionData?.status === 'HAS_SUBSCRIPTION' &&
   //     subscriptionData?.subscription
   // )
   const currentSubscription = subscriptionData?.subscription
-  //   console.log('subscriptionData', currentSubscription)
+  console.log('subscriptionData', currentSubscription)
 
   // Add new state and query for subscription details
-  const { data: subscriptionDetails, error: subscriptionDetailsError } =
-    useQuery({
-      queryKey: [
-        'subscription-details',
-        currentSubscription?.paystackSubscriptionCode,
-      ],
-      queryFn: async () => {
-        if (!currentSubscription?.paystackSubscriptionCode) {
-          throw new Error('No subscription code available')
+  const {
+    data: subscriptionDetails,
+    // isLoading: isLoadingDetails,
+    error: subscriptionDetailsError,
+  } = useQuery({
+    queryKey: [
+      'subscription-details',
+      currentSubscription?.stripeSubscriptionId,
+    ],
+    queryFn: async () => {
+      console.log(
+        'Fetching subscription details for ID:',
+        currentSubscription?.stripeSubscriptionId
+      )
+
+      if (!currentSubscription?.stripeSubscriptionId) {
+        console.error('No subscription ID available')
+        throw new Error('No subscription ID available')
+      }
+
+      try {
+        const result = await getSubscriptionDetails(
+          currentSubscription.stripeSubscriptionId
+        )
+
+        console.log('Subscription details result:', result)
+
+        if (result.error) {
+          console.error('Error from getSubscriptionDetails:', result.error)
+          throw new Error(result.error)
         }
 
-        try {
-          const result = await getPaystackSubscriptionDetails(
-            currentSubscription.paystackSubscriptionCode
-          )
-
-          if (result.error) {
-            throw new Error(result.error)
-          }
-
-          if (!result.success || !result.details) {
-            throw new Error('Invalid response format from subscription details')
-          }
-
-          return result as SubscriptionDetailsResponse
-        } catch (error) {
-          console.error('Error fetching subscription details:', error)
-          throw error
+        if (!result.success || !result.details) {
+          console.error('Invalid response format:', result)
+          throw new Error('Invalid response format from subscription details')
         }
-      },
-      enabled: !!currentSubscription?.paystackSubscriptionCode,
-      retry: 1,
-    })
+
+        return result as SubscriptionDetailsResponse
+      } catch (error) {
+        console.error('Error fetching subscription details:', error)
+        throw error
+      }
+    },
+    enabled: !!currentSubscription?.stripeSubscriptionId,
+    retry: 1, // Only retry once on failure
+  })
 
   // Add error display in the UI
   useEffect(() => {
@@ -220,7 +240,13 @@ export default function PaymentsPage() {
       setIsLoading(true)
       setSelectedPackage(packageName)
 
-      const result = await initializePaystackTransaction(
+      console.log('Creating checkout session for:', {
+        userId: session.user.id,
+        packageName,
+        billingType,
+      })
+
+      const result = await createCheckoutSession(
         session.user.id,
         packageName,
         billingType.toLowerCase()
@@ -233,7 +259,7 @@ export default function PaymentsPage() {
       if (result.url) {
         window.location.href = result.url
       } else {
-        throw new Error('No payment URL received')
+        throw new Error('No checkout URL received')
       }
     } catch (error) {
       console.error('Error in handleUpgrade:', error)
@@ -242,7 +268,7 @@ export default function PaymentsPage() {
         description:
           error instanceof Error
             ? error.message
-            : 'Failed to initialize payment',
+            : 'Failed to create checkout session',
         variant: 'destructive',
       })
     } finally {
@@ -252,13 +278,12 @@ export default function PaymentsPage() {
   }
 
   const handleCancelSubscription = async () => {
-    if (!currentSubscription?.paystackSubscriptionCode) return
+    if (!currentSubscription?.stripeSubscriptionId) return
 
     try {
       setIsCanceling(true)
-      const result = await cancelPaystackSubscription(
-        currentSubscription.paystackSubscriptionCode!,
-        currentSubscription.paystackEmailToken!
+      const result = await cancelSubscription(
+        currentSubscription.stripeSubscriptionId
       )
 
       if (result.error) {
@@ -267,7 +292,8 @@ export default function PaymentsPage() {
 
       toast({
         title: 'Success',
-        description: 'Your subscription has been canceled successfully.',
+        description:
+          'Your subscription will be canceled at the end of the billing period.',
       })
 
       // Refetch subscription data
