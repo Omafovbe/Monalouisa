@@ -7,10 +7,12 @@ import { cancelPaystackSubscription } from '@/actions/paystack-actions'
 
 interface SubscriptionCancelButtonProps {
   subscriptionCode: string
+  emailToken: string
 }
 
 export function SubscriptionCancelButton({
   subscriptionCode,
+  emailToken,
 }: SubscriptionCancelButtonProps) {
   const [isLoading, setIsLoading] = useState(false)
   const { toast } = useToast()
@@ -18,7 +20,10 @@ export function SubscriptionCancelButton({
   const handleCancel = async () => {
     try {
       setIsLoading(true)
-      const result = await cancelPaystackSubscription(subscriptionCode)
+      const result = await cancelPaystackSubscription(
+        subscriptionCode,
+        emailToken
+      )
 
       toast({
         title: 'Success',

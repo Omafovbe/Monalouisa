@@ -56,6 +56,7 @@ export default function PaystackTestPage() {
     try {
       setIsLoading(true)
       const { url } = await initializePaystackTransaction(
+        'cm6dch1ac0001nv401qh3qprc',
         selectedPackage,
         billingType
       )

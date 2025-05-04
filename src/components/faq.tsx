@@ -185,10 +185,10 @@ const FAQ = () => {
         <p className='mt-4 text-gray-600'>
           Contact us at{' '}
           <a
-            href='mailto:support@monlouisateaches.com'
+            href='mailto:info@monlouisateaches.com'
             className='text-indigo-600 hover:text-indigo-500'
           >
-            support@monlouisateaches.com
+            info@monlouisateaches.com
           </a>
         </p>
       </motion.div>
