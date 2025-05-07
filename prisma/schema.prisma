@@ -99,7 +99,7 @@ model Authenticator {
 model Teacher {
     id                 Int                  @id @default(autoincrement())
     userId             String               @unique
-    user               User                 @relation(fields: [userId], references: [id])
+    user               User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
     bio                String?
     phone              String?
     profilePicture     String?
@@ -118,7 +118,7 @@ model Teacher {
 model Student {
     id          String               @id @default(cuid())
     userId      String               @unique
-    user        User                 @relation(fields: [userId], references: [id])
+    user        User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
     dateOfBirth DateTime?
     grade       String?
     parentName  String?
@@ -136,7 +136,7 @@ model Student {
 model Admin {
     id        Int      @id @default(autoincrement())
     userId    String   @unique
-    user      User     @relation(fields: [userId], references: [id])
+    user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 }

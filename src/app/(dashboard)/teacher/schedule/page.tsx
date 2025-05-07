@@ -1,10 +1,12 @@
 'use client'
 
-import { useMemo, useState } from 'react'
-import { Calendar, dateFnsLocalizer, View } from 'react-big-calendar'
-import { format, parse, startOfWeek, getDay } from 'date-fns'
-import { enUS } from 'date-fns/locale'
-import 'react-big-calendar/lib/css/react-big-calendar.css'
+import { useState } from 'react'
+import FullCalendar from '@fullcalendar/react'
+import dayGridPlugin from '@fullcalendar/daygrid'
+import timeGridPlugin from '@fullcalendar/timegrid'
+import interactionPlugin from '@fullcalendar/interaction'
+import listPlugin from '@fullcalendar/list'
+import { format } from 'date-fns'
 import { useSchedule, type ScheduleFormValues } from '@/hooks/use-schedule'
 import {
   Dialog,
@@ -36,39 +38,8 @@ import * as z from 'zod'
 import { Card, CardContent } from '@/components/ui/card'
 import { Spinner } from '@/components/ui/spinner'
 import { toast } from '@/hooks/use-toast'
-
-// Setup the localizer
-const locales = {
-  'en-US': enUS,
-}
-
-const localizer = dateFnsLocalizer({
-  format,
-  parse,
-  startOfWeek,
-  getDay,
-  locales,
-})
-
-// Add custom toolbar formats
-const formats = {
-  monthHeaderFormat: 'MMMM yyyy',
-  dayHeaderFormat: 'EEEE, MMMM d, yyyy',
-  dayRangeHeaderFormat: ({ start, end }: { start: Date; end: Date }) =>
-    `${format(start, 'MMMM d')} – ${format(end, 'MMMM d, yyyy')}`,
-}
-
-// Add student color mapping
-const studentColors = [
-  '#4ECDC4', // Turquoise
-  '#FF6B6B', // Coral Red
-  '#45B7D1', // Sky Blue
-  '#96CEB4', // Sage Green
-  '#FFEEAD', // Cream Yellow
-  '#D4A5A5', // Dusty Rose
-  '#9FA8DA', // Periwinkle
-  '#FFE082', // Pale Yellow
-]
+import { Badge } from '@/components/ui/badge'
+import { EventClickArg } from '@fullcalendar/core'
 
 // Form schema for schedule creation/editing
 const scheduleFormSchema = z.object({
@@ -79,7 +50,70 @@ const scheduleFormSchema = z.object({
   endTime: z.string().min(1, 'End time is required'),
 })
 
-// Add this interface after the scheduleFormSchema
+// Add student color mapping
+const studentColors = [
+  '#FF6633',
+  '#FF33FF',
+  '#00B3E6',
+  '#E6B333',
+  '#3366E6',
+  '#B34D4D',
+  '#80B300',
+  '#809900',
+  '#E6B3B3',
+  '#6680B3',
+  '#66991A',
+  '#FF99E6',
+  '#CCFF1A',
+  '#FF1A66',
+  '#E6331A',
+  '#33FFCC',
+  '#66994D',
+  '#B366CC',
+  '#4D8000',
+  '#B33300',
+  '#CC80CC',
+  '#66664D',
+  '#991AFF',
+  '#E666FF',
+  '#4DB3FF',
+  '#1AB399',
+  '#E666B3',
+  '#33991A',
+  '#CC9999',
+  '#B3B31A',
+  '#00E680',
+  '#4D8066',
+  '#809980',
+  '#E6FF80',
+  '#1AFF33',
+  '#999933',
+  '#FF3380',
+  '#CCCC00',
+  '#66E64D',
+  '#4D80CC',
+  '#9900B3',
+  '#E64D66',
+  '#4DB380',
+  '#FF4D4D',
+  '#99E6E6',
+  '#6666FF',
+]
+
+// Improved hash function (djb2)
+const hashString = (str: string) => {
+  let hash = 5381
+  for (let i = 0; i < str.length; i++) {
+    hash = (hash << 5) + hash + str.charCodeAt(i)
+  }
+  return Math.abs(hash)
+}
+
+const getStudentColor = (studentId: string) => {
+  const hash = hashString(studentId)
+  return studentColors[hash % studentColors.length]
+}
+
 interface Schedule {
   id: number
   title: string
@@ -92,11 +126,13 @@ interface Schedule {
 }
 
 export default function SchedulePage() {
-  const [selectedSlot, setSelectedSlot] = useState<object | null>(null)
+  const [selectedSlot, setSelectedSlot] = useState<{
+    start: Date
+    end: Date
+  } | null>(null)
   const [selectedEvent, setSelectedEvent] = useState<Schedule | null>(null)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
-  const [view, setView] = useState<View>('month')
-  const [date, setDate] = useState(new Date())
+  const [selectedStudents, setSelectedStudents] = useState<string[]>([])
 
   const {
     schedules,
@@ -104,6 +140,7 @@ export default function SchedulePage() {
     subjects,
     isLoading,
     createSchedule,
+    updateSchedule,
     deleteSchedule,
   } = useSchedule()
 
@@ -118,126 +155,97 @@ export default function SchedulePage() {
     },
   })
 
-  // Add student color mapping
-  const studentColorMap = useMemo(() => {
-    const uniqueStudentIds = Array.from(
-      new Set(schedules.map((schedule) => schedule.studentId))
-    )
-    return Object.fromEntries(
-      uniqueStudentIds.map((id, index) => [
-        id,
-        studentColors[index % studentColors.length],
-      ])
-    )
-  }, [schedules])
+  // Transform schedules to FullCalendar event format
+  const events = schedules.map((schedule) => ({
+    id: schedule.id.toString(),
+    title: schedule.title,
+    start: new Date(schedule.start),
+    end: new Date(schedule.end),
+    extendedProps: {
+      studentId: schedule.studentId,
+      subjectId: schedule.subjectId,
+      studentName: schedule.studentName,
+      subjectName: schedule.subjectName,
+    },
+    color: getStudentColor(schedule.studentId),
+  }))
+  // console.table(events)
 
   // Handle slot selection (creating new schedule)
-  const handleSelectSlot = (slotInfo: {
-    start: Date
-    end: Date
-    /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-    resource?: any // Optional, include if your slots have resources
-  }) => {
-    setSelectedSlot(slotInfo)
+  const handleSelectSlot = (selectInfo: { start: Date; end: Date }) => {
+    setSelectedSlot(selectInfo)
     form.reset({
       title: '',
       studentId: '',
       subjectId: '',
-      startTime: format(slotInfo.start, "yyyy-MM-dd'T'HH:mm"),
-      endTime: format(slotInfo.end, "yyyy-MM-dd'T'HH:mm"),
+      startTime: format(selectInfo.start, "yyyy-MM-dd'T'HH:mm"),
+      endTime: format(selectInfo.end, "yyyy-MM-dd'T'HH:mm"),
     })
   }
 
   // Handle event selection (editing existing schedule)
-  const handleSelectEvent = (event: Schedule) => {
-    setSelectedEvent(event)
-    form.reset({
-      title: event.title.split(' - ')[0],
-      studentId: event.studentId,
-      subjectId: event.subjectId.toString(),
-      startTime: format(new Date(event.start), "yyyy-MM-dd'T'HH:mm"),
-      endTime: format(new Date(event.end), "yyyy-MM-dd'T'HH:mm"),
-    })
+  const handleSelectEvent = (info: EventClickArg) => {
+    const event = schedules.find((s) => s.id.toString() === info.event.id)
+    if (event) {
+      setSelectedEvent(event)
+      form.reset({
+        title: event.title,
+        studentId: event.studentId,
+        subjectId: event.subjectId.toString(),
+        startTime: format(new Date(event.start), "yyyy-MM-dd'T'HH:mm"),
+        endTime: format(new Date(event.end), "yyyy-MM-dd'T'HH:mm"),
+      })
+    }
   }
 
   // Handle form submission
-  const onSubmit = (values: ScheduleFormValues) => {
+  const onSubmit = async (values: ScheduleFormValues) => {
     try {
-      // Validate required fields
-      if (
-        !values.studentId ||
-        !values.subjectId ||
-        !values.startTime ||
-        !values.endTime
-      ) {
-        toast({
-          title: 'Error',
-          description: 'Please fill in all required fields',
-          variant: 'destructive',
-        })
-        return
-      }
+      // Convert local times to UTC+1
+      const startTime = new Date(values.startTime)
+      const endTime = new Date(values.endTime)
 
-      // Create the schedule
-      createSchedule(values)
+      if (selectedEvent) {
+        // Update existing schedule
+        updateSchedule(selectedEvent.id, {
+          ...values,
+          startTime: startTime.toISOString(),
+          endTime: endTime.toISOString(),
+        })
+      } else {
+        // Create new schedules for each selected student
+        for (const studentId of selectedStudents) {
+          createSchedule({
+            ...values,
+            studentId,
+            startTime: startTime.toISOString(),
+            endTime: endTime.toISOString(),
+          })
+        }
+      }
 
       // Reset form and close dialog
       form.reset()
       setSelectedSlot(null)
       setSelectedEvent(null)
+      setSelectedStudents([])
     } catch (error) {
-      console.error('Error creating schedule:', error)
+      console.error('Error saving schedule:', error)
       toast({
         title: 'Error',
-        description: 'Failed to create schedule',
+        description: selectedEvent
+          ? 'Failed to update schedule'
+          : 'Failed to create schedule',
         variant: 'destructive',
       })
     }
   }
-
   // Handle schedule deletion
   const handleDelete = () => {
     if (!selectedEvent?.id) return
     deleteSchedule(selectedEvent.id)
     setSelectedEvent(null)
     setIsDeleteDialogOpen(false)
-  }
-
-  // Replace the eventStyleGetter function
-  const eventStyleGetter = (event: Schedule) => ({
-    style: {
-      backgroundColor: studentColorMap[event.studentId] || '#6366F1',
-      borderRadius: '4px',
-      opacity: 0.8,
-      color: 'white',
-      border: '0',
-      display: 'block',
-    },
-  })
-
-  // Calendar event handlers
-  const { views } = useMemo(
-    () => ({
-      views: {
-        month: true,
-        week: true,
-        day: true,
-        agenda: true,
-      },
-    }),
-    []
-  )
-
-  // Handle view change
-  const handleViewChange = (newView: View) => {
-    console.log('View changed to:', newView)
-    setView(newView)
-  }
-
-  // Handle navigation
-  const handleNavigate = (newDate: Date) => {
-    console.log('Navigating to:', newDate)
-    setDate(newDate)
   }
 
   if (isLoading) {
@@ -252,30 +260,38 @@ export default function SchedulePage() {
     <div className='container mx-auto p-6'>
       <Card>
         <CardContent className='p-6'>
-          <Calendar
-            localizer={localizer}
-            events={schedules.map((schedule) => ({
-              ...schedule,
-              start: new Date(schedule.start),
-              end: new Date(schedule.end),
-            }))}
-            startAccessor='start'
-            endAccessor='end'
-            style={{ height: 700 }}
-            selectable
-            onSelectSlot={handleSelectSlot}
-            onSelectEvent={handleSelectEvent}
-            eventPropGetter={eventStyleGetter}
-            view={view}
-            onView={handleViewChange}
-            date={date}
-            onNavigate={handleNavigate}
-            views={views}
-            formats={formats}
-            popup
-            step={30}
-            timeslots={2}
-            toolbar={true}
+          <FullCalendar
+            plugins={[
+              dayGridPlugin,
+              timeGridPlugin,
+              interactionPlugin,
+              listPlugin,
+            ]}
+            timeZone='UTC+1'
+            initialView='timeGridWeek'
+            headerToolbar={{
+              left: 'prev,next today',
+              center: 'title',
+              right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek',
+            }}
+            events={events}
+            height='auto'
+            slotMinTime='06:00:00'
+            slotMaxTime='20:00:00'
+            slotDuration='00:30:00'
+            allDaySlot={false}
+            selectable={true}
+            selectMirror={true}
+            dayMaxEvents={4}
+            weekends={true}
+            select={handleSelectSlot}
+            eventClick={handleSelectEvent}
+            eventTimeFormat={{
+              hour: '2-digit',
+              minute: '2-digit',
+              meridiem: false,
+              hour12: false,
+            }}
           />
         </CardContent>
       </Card>
@@ -286,22 +302,15 @@ export default function SchedulePage() {
         onOpenChange={() => {
           setSelectedSlot(null)
           setSelectedEvent(null)
+          setSelectedStudents([])
         }}
       >
-        <DialogContent
-          className='sm:max-w-[425px]'
-          aria-describedby='schedule-dialog-description'
-        >
+        <DialogContent className='sm:max-w-[425px]'>
           <DialogHeader>
             <DialogTitle>
               {selectedEvent ? 'Edit Schedule' : 'Create Schedule'}
             </DialogTitle>
           </DialogHeader>
-          <div id='schedule-dialog-description'>
-            {selectedEvent
-              ? 'Edit an existing schedule'
-              : 'Create a new schedule for your class'}
-          </div>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-4'>
               <FormField
@@ -322,31 +331,57 @@ export default function SchedulePage() {
                 name='studentId'
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Student</FormLabel>
+                    <FormLabel>Students</FormLabel>
                     <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
+                      onValueChange={(value) => {
+                        if (!selectedStudents.includes(value)) {
+                          const newStudents = [...selectedStudents, value]
+                          setSelectedStudents(newStudents)
+                          field.onChange(value)
+                        }
+                      }}
+                      value={field.value}
                     >
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder='Select a student' />
+                          <SelectValue placeholder='Select students' />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {students?.map(
-                          (student: {
-                            id: string
-                            name: string | null
-                            email: string
-                            assignedAt: Date
-                          }) => (
-                            <SelectItem key={student.id} value={student.id}>
-                              {student.name || student.email}
-                            </SelectItem>
-                          )
-                        )}
+                        {students?.map((student) => (
+                          <SelectItem key={student.id} value={student.id}>
+                            {student.name || student.email}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
+                    <div className='flex flex-wrap gap-2 mt-2'>
+                      {selectedStudents.map((studentId) => {
+                        const student = students?.find(
+                          (s) => s.id === studentId
+                        )
+                        return (
+                          <Badge
+                            key={studentId}
+                            variant='secondary'
+                            className='cursor-pointer'
+                            onClick={() => {
+                              const newStudents = selectedStudents.filter(
+                                (id) => id !== studentId
+                              )
+                              setSelectedStudents(newStudents)
+                              if (newStudents.length > 0) {
+                                field.onChange(newStudents[0])
+                              } else {
+                                field.onChange('')
+                              }
+                            }}
+                          >
+                            {student?.name || student?.email} ×
+                          </Badge>
+                        )
+                      })}
+                    </div>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -430,14 +465,11 @@ export default function SchedulePage() {
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <DialogContent
-          className='sm:max-w-[425px]'
-          aria-describedby='delete-dialog-description'
-        >
+        <DialogContent className='sm:max-w-[425px]'>
           <DialogHeader>
             <DialogTitle>Delete Schedule</DialogTitle>
           </DialogHeader>
-          <div id='delete-dialog-description'>
+          <div>
             Are you sure you want to delete this schedule? This action cannot be
             undone.
           </div>

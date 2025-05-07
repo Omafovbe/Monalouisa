@@ -1,61 +1,16 @@
 'use client'
 
-import { Calendar, dateFnsLocalizer, View } from 'react-big-calendar'
-import { format, parse, startOfWeek, getDay } from 'date-fns'
-import { enUS } from 'date-fns/locale'
-import 'react-big-calendar/lib/css/react-big-calendar.css'
+import FullCalendar from '@fullcalendar/react'
+import dayGridPlugin from '@fullcalendar/daygrid'
+import timeGridPlugin from '@fullcalendar/timegrid'
+import interactionPlugin from '@fullcalendar/interaction'
+import listPlugin from '@fullcalendar/list'
 import { Card, CardContent } from '@/components/ui/card'
 import { Loader2 } from 'lucide-react'
-import { useStudentSchedule, type Schedule } from './use-schedule'
-import { useState, useMemo } from 'react'
-
-// Setup the localizer
-const locales = {
-  'en-US': enUS,
-}
-
-const localizer = dateFnsLocalizer({
-  format,
-  parse,
-  startOfWeek,
-  getDay,
-  locales,
-})
-
-// Add custom toolbar formats
-const formats = {
-  monthHeaderFormat: 'MMMM yyyy',
-  dayHeaderFormat: 'EEEE, MMMM d, yyyy',
-  dayRangeHeaderFormat: ({ start, end }: { start: Date; end: Date }) =>
-    `${format(start, 'MMMM d')} – ${format(end, 'MMMM d, yyyy')}`,
-}
+import { useStudentSchedule } from './use-schedule'
 
 export default function StudentSchedulePage() {
   const { schedules, isLoading, error } = useStudentSchedule()
-  const [view, setView] = useState<View>('week')
-  const [date, setDate] = useState(new Date())
-
-  // Calendar event handlers
-  const { views } = useMemo(
-    () => ({
-      views: {
-        month: true,
-        week: true,
-        day: true,
-      },
-    }),
-    []
-  )
-
-  // Handle view change
-  const handleViewChange = (newView: View) => {
-    setView(newView)
-  }
-
-  // Handle navigation
-  const handleNavigate = (newDate: Date) => {
-    setDate(newDate)
-  }
 
   if (isLoading) {
     return (
@@ -73,17 +28,20 @@ export default function StudentSchedulePage() {
     )
   }
 
-  // Calendar event style
-  const eventStyleGetter = () => ({
-    style: {
-      backgroundColor: '#6366F1',
-      borderRadius: '4px',
-      opacity: 0.8,
-      color: 'white',
-      border: '0',
-      display: 'block',
+  // Transform schedules to FullCalendar event format
+  const events = schedules.map((schedule) => ({
+    id: schedule.id.toString(),
+    title: schedule.title,
+    start: new Date(schedule.start),
+    end: new Date(schedule.end),
+    backgroundColor: '#6366F1',
+    borderColor: '#6366F1',
+    textColor: 'white',
+    extendedProps: {
+      studentName: schedule.studentName,
+      subjectName: schedule.subjectName,
     },
-  })
+  }))
 
   return (
     <div className='flex h-screen container mx-auto p-6 flex-col space-y-6'>
@@ -92,26 +50,39 @@ export default function StudentSchedulePage() {
       </div>
       <Card>
         <CardContent className='p-6'>
-          <Calendar<Schedule>
-            localizer={localizer}
-            events={schedules.map((schedule) => ({
-              ...schedule,
-              start: new Date(schedule.start),
-              end: new Date(schedule.end),
-            }))}
-            startAccessor='start'
-            endAccessor='end'
-            style={{ height: 500 }}
-            view={view}
-            onView={handleViewChange}
-            date={date}
-            onNavigate={handleNavigate}
-            views={views}
-            formats={formats}
-            eventPropGetter={eventStyleGetter}
-            popup
-            step={30}
-            timeslots={4}
+          <FullCalendar
+            plugins={[
+              dayGridPlugin,
+              timeGridPlugin,
+              interactionPlugin,
+              listPlugin,
+            ]}
+            initialView='timeGridWeek'
+            headerToolbar={{
+              left: 'prev,next today',
+              center: 'title',
+              right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek',
+            }}
+            events={events}
+            height='auto'
+            slotMinTime='06:00:00'
+            slotMaxTime='20:00:00'
+            slotDuration='00:30:00'
+            allDaySlot={false}
+            eventTimeFormat={{
+              hour: '2-digit',
+              minute: '2-digit',
+              meridiem: false,
+              hour12: false,
+            }}
+            eventClick={(info) => {
+              // Show event details in a tooltip or modal
+              alert(`
+                Subject: ${info.event.extendedProps.subjectName}
+                Student: ${info.event.extendedProps.studentName}
+                Time: ${info.event.start?.toLocaleTimeString()} - ${info.event.end?.toLocaleTimeString()}
+              `)
+            }}
           />
         </CardContent>
       </Card>

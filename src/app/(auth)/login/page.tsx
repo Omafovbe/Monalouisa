@@ -22,10 +22,14 @@ export default function LoginPage() {
   }
 
   async function handleSubmit(formData: FormData) {
+    setIsLoading(true)
     try {
-      setIsLoading(true)
-      const email = formData.get('email') as string
+      let email = formData.get('email') as string
       const password = formData.get('password') as string
+
+      if (email) {
+        email = email.toLowerCase()
+      }
 
       if (!email || !password) {
         toast({
@@ -33,6 +37,7 @@ export default function LoginPage() {
           description: 'Please fill in all fields',
           variant: 'destructive',
         })
+        setIsLoading(false)
         return
       }
 
@@ -59,6 +64,7 @@ export default function LoginPage() {
           description: message,
           variant: 'destructive',
         })
+        setIsLoading(false)
         return
       }
 
@@ -73,7 +79,6 @@ export default function LoginPage() {
           error instanceof Error ? error.message : 'Failed to sign in',
         variant: 'destructive',
       })
-    } finally {
       setIsLoading(false)
     }
   }

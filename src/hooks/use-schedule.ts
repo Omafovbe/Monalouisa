@@ -33,7 +33,7 @@ export function useSchedule() {
   const { toast } = useToast()
   const queryClient = useQueryClient()
 
-  // Fetch teacher's schedule
+  // Fetch teacher's schedule with optimized caching
   const {
     data: scheduleData,
     isLoading: isLoadingSchedule,
@@ -45,9 +45,11 @@ export function useSchedule() {
       return getTeacherSchedule(session.user.id)
     },
     enabled: !!session?.user?.id,
+    staleTime: 1000 * 60 * 5, // Consider data fresh for 5 minutes
+    gcTime: 1000 * 60 * 30, // Keep data in cache for 30 minutes
   })
 
-  // Fetch teacher's students
+  // Fetch teacher's students with optimized caching
   const {
     data: studentsData,
     isLoading: isLoadingStudents,
@@ -60,9 +62,11 @@ export function useSchedule() {
       return result
     },
     enabled: !!session?.user?.id,
+    staleTime: 1000 * 60 * 5, // Consider data fresh for 5 minutes
+    gcTime: 1000 * 60 * 30, // Keep data in cache for 30 minutes
   })
 
-  // Fetch subjects
+  // Fetch subjects with optimized caching
   const {
     data: subjectsData,
     isLoading: isLoadingSubjects,
@@ -70,6 +74,8 @@ export function useSchedule() {
   } = useQuery({
     queryKey: ['subjects'],
     queryFn: getSubjects,
+    staleTime: 1000 * 60 * 60, // Consider data fresh for 1 hour
+    gcTime: 1000 * 60 * 60 * 24, // Keep data in cache for 24 hours
   })
 
   // Unified mutation for creating and updating schedules
@@ -104,7 +110,11 @@ export function useSchedule() {
         title: 'Success',
         description: 'Schedule saved successfully',
       })
-      queryClient.invalidateQueries({ queryKey: ['teacher-schedule'] })
+      // Optimize cache invalidation
+      queryClient.invalidateQueries({
+        queryKey: ['teacher-schedule'],
+        refetchType: 'active',
+      })
     },
     onError: (error: Error) => {
       toast({
@@ -126,7 +136,11 @@ export function useSchedule() {
         title: 'Success',
         description: 'Schedule deleted successfully',
       })
-      queryClient.invalidateQueries({ queryKey: ['teacher-schedule'] })
+      // Optimize cache invalidation
+      queryClient.invalidateQueries({
+        queryKey: ['teacher-schedule'],
+        refetchType: 'active',
+      })
     },
     onError: (error: Error) => {
       toast({
@@ -136,10 +150,10 @@ export function useSchedule() {
       })
     },
   })
-  // console.log('studentsData', studentsData)
+
   return {
     schedules: scheduleData?.schedules || [],
-    students: studentsData?.students || [], // Use students array from getUnassignedStudents
+    students: studentsData?.students || [],
     subjects: subjectsData?.subjects || [],
     isLoading: isLoadingSchedule || isLoadingStudents || isLoadingSubjects,
     error: scheduleError || studentsError || subjectsError,
