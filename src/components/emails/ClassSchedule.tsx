@@ -114,7 +114,7 @@ export default function ClassSchedule({
               {googleCalendarLink && (
                 <Button
                   href={googleCalendarLink}
-                  className='bg-goldyellow-400 rounded-md text-goldyellow-900 font-medium no-underline text-center px-[12px] py-[8px] cursor-pointer mb-[8px] mx-[4px]'
+                  className='bg-goldyellow-400 rounded-md text-goldyellow-900 font-medium no-underline text-center px-[12px] py-[8px] cursor-pointer mb-[10px] ml-1 mr-3'
                 >
                   Google Calendar
                 </Button>
@@ -122,7 +122,7 @@ export default function ClassSchedule({
               {appleCalendarLink && (
                 <Button
                   href={appleCalendarLink}
-                  className='bg-gray-200 rounded-md text-gray-800 font-medium no-underline text-center px-[12px] py-[8px] cursor-pointer mb-[8px] mx-[4px]'
+                  className='bg-gray-200 rounded-md text-gray-800 font-medium no-underline text-center px-[12px] py-[8px] cursor-pointer mb-[8px] ml-1 mr-3'
                 >
                   Apple Calendar
                 </Button>
@@ -130,7 +130,7 @@ export default function ClassSchedule({
               {outlookCalendarLink && (
                 <Button
                   href={outlookCalendarLink}
-                  className='bg-sky-200 rounded-md text-sky-900 font-medium no-underline text-center px-[12px] py-[8px] cursor-pointer mb-[8px] mx-[4px]'
+                  className='bg-sky-200 rounded-md text-sky-900 font-medium no-underline text-center px-[12px] py-[8px] cursor-pointer mb-[8px] ml-1 mr-3'
                 >
                   Outlook
                 </Button>

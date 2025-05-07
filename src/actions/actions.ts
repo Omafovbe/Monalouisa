@@ -1041,26 +1041,26 @@ export async function upsertSchedule({
 }) {
   try {
     // Check for time slot conflicts, excluding the current schedule if updating
-    const existingSchedule = await db.schedule.findFirst({
-      where: {
-        teacherId,
-        ...(scheduleId && { id: { not: scheduleId } }), // Exclude current schedule if updating
-        OR: [
-          {
-            startTime: { lt: endTime },
-            endTime: { gt: startTime },
-          },
-        ],
-      },
-    })
+    // const existingSchedule = await db.schedule.findFirst({
+    //   where: {
+    //     teacherId,
+    //     ...(scheduleId && { id: { not: scheduleId } }), // Exclude current schedule if updating
+    //     OR: [
+    //       {
+    //         startTime: { lt: endTime },
+    //         endTime: { gt: startTime },
+    //       },
+    //     ],
+    //   },
+    // })
 
-    if (existingSchedule) {
-      return {
-        error: scheduleId
-          ? 'This time slot conflicts with another schedule. Please choose a different time.'
-          : 'This time slot is already taken. Please choose a different time.',
-      }
-    }
+    // if (existingSchedule) {
+    //   return {
+    //     error: scheduleId
+    //       ? 'This time slot conflicts with another schedule. Please choose a different time.'
+    //       : 'This time slot is already taken. Please choose a different time.',
+    //   }
+    // }
 
     // If updating, verify the schedule exists and belongs to the teacher
     if (scheduleId) {
