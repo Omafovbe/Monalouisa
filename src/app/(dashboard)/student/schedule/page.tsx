@@ -8,9 +8,24 @@ import listPlugin from '@fullcalendar/list'
 import { Card, CardContent } from '@/components/ui/card'
 import { Loader2 } from 'lucide-react'
 import { useStudentSchedule } from './use-schedule'
+import { FeedbackDialog } from '@/components/schedule/feedback-dialog'
+import { useToast } from '@/hooks/use-toast'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { Badge } from '@/components/ui/badge'
+import { format } from 'date-fns'
+import { useState } from 'react'
 
 export default function StudentSchedulePage() {
   const { schedules, isLoading, error } = useStudentSchedule()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [selectedEvent, setSelectedEvent] = useState<any>(null)
+  const [showEventDetails, setShowEventDetails] = useState(false)
+  const { toast } = useToast()
 
   if (isLoading) {
     return (
@@ -28,6 +43,32 @@ export default function StudentSchedulePage() {
     )
   }
 
+  const handleFeedbackSubmit = async (feedback: {
+    scheduleId: number
+    status: 'completed' | 'missed'
+    notes: string
+  }) => {
+    try {
+      // Here you would typically make an API call to save the feedback
+      // await saveFeedback(feedback)
+
+      // Show notification
+      toast({
+        title:
+          feedback.status === 'completed' ? 'Class Completed' : 'Class Missed',
+        description: feedback.notes || 'No additional notes provided',
+        variant: feedback.status === 'completed' ? 'default' : 'destructive',
+      })
+    } catch (e) {
+      console.error(e)
+      toast({
+        title: 'Error',
+        description: 'Failed to submit feedback. Please try again.',
+        variant: 'destructive',
+      })
+    }
+  }
+
   // Transform schedules to FullCalendar event format
   const events = schedules.map((schedule) => ({
     id: schedule.id.toString(),
@@ -40,6 +81,8 @@ export default function StudentSchedulePage() {
     extendedProps: {
       studentName: schedule.studentName,
       subjectName: schedule.subjectName,
+      scheduleId: schedule.id,
+      teacherId: schedule.teacherId,
     },
   }))
 
@@ -76,16 +119,45 @@ export default function StudentSchedulePage() {
               hour12: false,
             }}
             eventClick={(info) => {
-              // Show event details in a tooltip or modal
-              alert(`
-                Subject: ${info.event.extendedProps.subjectName}
-                Student: ${info.event.extendedProps.studentName}
-                Time: ${info.event.start?.toLocaleTimeString()} - ${info.event.end?.toLocaleTimeString()}
-              `)
+              setSelectedEvent(info.event)
+              setShowEventDetails(true)
             }}
           />
         </CardContent>
       </Card>
+
+      {/* Event Details Dialog */}
+      <Dialog open={showEventDetails} onOpenChange={setShowEventDetails}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Class Details</DialogTitle>
+          </DialogHeader>
+          {selectedEvent && (
+            <div className='space-y-4'>
+              <div className='space-y-2'>
+                <h4 className='font-medium'>{selectedEvent.title}</h4>
+                <p className='text-sm text-muted-foreground'>
+                  {format(selectedEvent.start!, 'MMM d, yyyy h:mm a')} -{' '}
+                  {format(selectedEvent.end!, 'h:mm a')}
+                </p>
+                <div className='flex items-center gap-2'>
+                  <Badge variant='outline'>
+                    {selectedEvent.extendedProps.subjectName}
+                  </Badge>
+                </div>
+              </div>
+              <FeedbackDialog
+                scheduleId={selectedEvent.extendedProps.scheduleId}
+                teacherId={selectedEvent.extendedProps.teacherId}
+                title={selectedEvent.title}
+                startTime={selectedEvent.start!}
+                endTime={selectedEvent.end!}
+                onFeedbackSubmit={handleFeedbackSubmit}
+              />
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

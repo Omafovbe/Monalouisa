@@ -14,6 +14,7 @@ import {
   sendTeacherOnboardingEmail,
   // sendStudentReassignmentEmail,
 } from '@/lib/email'
+import { auth } from '@/lib/auth'
 
 // Add this function to hash passwords
 async function hashPassword(password: string): Promise<string> {
@@ -1527,5 +1528,218 @@ export async function reassignStudentsToTeacher(
   } catch (error) {
     console.error('Error reassigning students:', error)
     return { error: 'Failed to reassign students' }
+  }
+}
+
+// Feedback Management
+export async function createFeedback(data: {
+  teacherId: string
+  rating: number
+  comment: string
+  status: 'completed' | 'missed'
+}) {
+  try {
+    const session = await auth()
+    if (!session?.user?.id) {
+      throw new Error('Unauthorized')
+    }
+
+    // Get student ID from the user
+    const student = await db.student.findUnique({
+      where: { userId: session.user.id },
+    })
+
+    if (!student) {
+      throw new Error('Student not found')
+    }
+
+    const feedback = await db.feedback.create({
+      data: {
+        studentId: student.id,
+        teacherId: data.teacherId,
+        rating: data.rating,
+        comment: data.comment,
+        status: data.status,
+      },
+      include: {
+        teacher: {
+          include: {
+            user: {
+              select: {
+                name: true,
+                email: true,
+              },
+            },
+          },
+        },
+      },
+    })
+
+    revalidatePath('/admin/feedback')
+    return { success: true, data: [feedback] }
+  } catch (error) {
+    console.error('Error creating feedback:', error)
+    return { success: false, data: [] }
+  }
+}
+
+export async function updateFeedbackStatus(id: string, rating: number) {
+  try {
+    const session = await auth()
+    if (!session?.user?.id) {
+      throw new Error('Unauthorized')
+    }
+
+    // Verify admin role
+    const admin = await db.admin.findFirst({
+      where: { userId: session.user.id },
+    })
+
+    if (!admin) {
+      throw new Error('Unauthorized - Admin access required')
+    }
+
+    const feedback = await db.feedback.update({
+      where: { id },
+      data: { rating },
+      include: {
+        teacher: {
+          include: {
+            user: {
+              select: {
+                name: true,
+                email: true,
+              },
+            },
+          },
+        },
+      },
+    })
+
+    revalidatePath('/admin/feedback')
+    return { success: true, data: [feedback] }
+  } catch (error) {
+    console.error('Error updating feedback:', error)
+    return { success: false, data: [] }
+  }
+}
+
+export async function getFeedbackList(params: {
+  page?: number
+  limit?: number
+  status?: string
+  search?: string
+}) {
+  try {
+    const { page = 1, limit = 10, status, search } = params
+    const skip = (page - 1) * limit
+
+    const where = {
+      ...(status && { status }),
+      ...(search && {
+        OR: [
+          { comment: { contains: search, mode: 'insensitive' as const } },
+          {
+            student: {
+              user: {
+                name: { contains: search, mode: 'insensitive' as const },
+              },
+            },
+          },
+          {
+            teacher: {
+              user: {
+                name: { contains: search, mode: 'insensitive' as const },
+              },
+            },
+          },
+        ],
+      }),
+    }
+
+    const [feedback, total] = await Promise.all([
+      db.feedback.findMany({
+        where,
+        include: {
+          student: {
+            include: {
+              user: {
+                select: {
+                  name: true,
+                  email: true,
+                },
+              },
+            },
+          },
+          teacher: {
+            include: {
+              user: {
+                select: {
+                  name: true,
+                  email: true,
+                },
+              },
+            },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+      }),
+      db.feedback.count({ where }),
+    ])
+
+    return {
+      success: true,
+      data: feedback,
+      pagination: {
+        total,
+        pages: Math.ceil(total / limit),
+        page,
+        limit,
+      },
+    }
+  } catch (error) {
+    console.error('Error fetching feedback:', error)
+    return { success: false, data: [] }
+  }
+}
+
+export async function getStudentFeedback() {
+  try {
+    const session = await auth()
+    if (!session?.user?.id) {
+      throw new Error('Unauthorized')
+    }
+
+    const student = await db.student.findUnique({
+      where: { userId: session.user.id },
+    })
+
+    if (!student) {
+      throw new Error('Student not found')
+    }
+
+    const feedback = await db.feedback.findMany({
+      where: { studentId: student.id },
+      include: {
+        teacher: {
+          include: {
+            user: {
+              select: {
+                name: true,
+                email: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    })
+
+    return { success: true, data: feedback }
+  } catch (error) {
+    console.error('Error fetching student feedback:', error)
+    return { success: false, data: [] }
   }
 }

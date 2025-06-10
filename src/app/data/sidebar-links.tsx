@@ -9,6 +9,7 @@ import {
   GraduationCap,
   BookOpen,
   FileText,
+  MessageCircle,
 } from 'lucide-react'
 
 export interface SidebarLink {
@@ -45,6 +46,17 @@ export const sidebarLinks: SidebarGroup[] = [
         label: 'Users',
         icon: <Users className='h-4 w-4' />,
         href: '/admin/users',
+      },
+
+      {
+        label: 'Classes',
+        icon: <BookOpen className='h-4 w-4' />,
+        href: '/admin/classes',
+      },
+      {
+        label: 'Feedback',
+        icon: <MessageCircle className='h-4 w-4' />,
+        href: '/admin/feedback',
       },
       {
         label: 'Applications',

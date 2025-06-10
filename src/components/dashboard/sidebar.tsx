@@ -46,11 +46,11 @@ const teacherMenuItems: MenuItem[] = [
     label: 'Schedule',
     icon: <Calendar className='h-4 w-4 mr-2' />,
   },
-  {
-    href: '/teacher/classes',
-    label: 'Classes',
-    icon: <BookOpen className='h-4 w-4 mr-2' />,
-  },
+  // {
+  //   href: '/teacher/classes',
+  //   label: 'Classes',
+  //   icon: <BookOpen className='h-4 w-4 mr-2' />,
+  // },
   {
     href: '/teacher/live-class',
     label: 'Video Session',
@@ -79,11 +79,11 @@ const studentMenuItems: MenuItem[] = [
     label: 'Schedule',
     icon: <Calendar className='h-4 w-4 mr-2' />,
   },
-  {
-    href: '/student/subjects',
-    label: 'My Classes',
-    icon: <BookOpen className='h-4 w-4 mr-2' />,
-  },
+  // {
+  //   href: '/student/subjects',
+  //   label: 'My Classes',
+  //   icon: <BookOpen className='h-4 w-4 mr-2' />,
+  // },
   {
     href: '/student/progress',
     label: 'Progress',
