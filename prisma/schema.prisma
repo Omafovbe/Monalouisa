@@ -111,6 +111,7 @@ model Teacher {
     createdAt          DateTime             @default(now())
     updatedAt          DateTime             @updatedAt
     Schedule           Schedule[]
+    Feedback           Feedback[]
 
     @@index([status])
 }
@@ -131,6 +132,7 @@ model Student {
 
     StudentsOnSubjects StudentsOnSubjects[]
     subscription       Subscription?
+    Feedback           Feedback[]
 }
 
 model Admin {
@@ -243,4 +245,21 @@ model Subscription {
 
     @@index([stripeSubscriptionId])
     @@index([paystackSubscriptionCode])
+}
+
+model Feedback {
+    id        String   @id @default(cuid())
+    studentId String
+    teacherId String
+    rating    Int // 1-5 rating
+    comment   String   @db.Text
+    status    String   @default("PENDING") // PENDING, APPROVED, REJECTED
+    student   Student  @relation(fields: [studentId], references: [id])
+    teacher   Teacher  @relation(fields: [teacherId], references: [userId])
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@index([studentId])
+    @@index([teacherId])
+    @@index([status])
 }
