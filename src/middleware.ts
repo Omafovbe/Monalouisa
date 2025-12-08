@@ -2,34 +2,29 @@
 
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
-import { auth } from '@/lib/auth'
-
-// // Using a more precise pattern to match all admin routes
-// // const protectedRoutes = ['/admin'] // This will match /admin and all its subroutes
 
 // Out of bound for all except admin
+// Note: We avoid using auth() here because it uses Prisma which requires Node.js runtime
+// Middleware runs in Edge Runtime, and Prisma Client uses Node.js modules (node:path, etc.)
+// The actual role check will be handled in the page components which run in Node.js runtime
 
 const middleware = async (req: NextRequest) => {
-  const session = await auth()
   const path = req.nextUrl.pathname
   console.log(path)
-  // Add debug logging
-  // console.log('Middleware Session:', {
-  //   session,
-  //   userId: session?.user?.id,
-  //   userRole: session?.user?.role,
-  //   path,
-  // })
-  // Check if it's an admin route and user is not admin
-  if (
-    (path === '/admin' || path.startsWith('/admin/')) &&
-    (!session || session.user?.role !== 'ADMIN')
-  ) {
-    return NextResponse.redirect(new URL('/unauthorized', req.url))
-  }
 
-  if (session?.user?.role === 'ADMIN') {
-    return NextResponse.next()
+  // Basic path protection - actual role-based auth is handled in page components
+  // This avoids the Edge Runtime incompatibility with Prisma Client
+  if (path === '/admin' || path.startsWith('/admin/')) {
+    // Check if user has a session cookie (basic check)
+    const hasSession =
+      req.cookies.get('authjs.session-token')?.value ||
+      req.cookies.get('__Secure-authjs.session-token')?.value
+
+    // If no session, redirect to login
+    // The page component will handle the actual role check
+    if (!hasSession) {
+      return NextResponse.redirect(new URL('/login', req.url))
+    }
   }
 
   return NextResponse.next()

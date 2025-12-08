@@ -4,7 +4,7 @@ import { hash } from 'bcryptjs'
 import { signIn } from '@/lib/auth'
 import { headers } from 'next/headers'
 import { revalidatePath } from 'next/cache'
-import { ApplicationStatus } from '@prisma/client'
+import { ApplicationStatus } from '@/generated/prisma/client'
 import { nanoid } from 'nanoid'
 import {
   sendWelcomeEmail,
