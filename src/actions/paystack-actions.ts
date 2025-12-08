@@ -4,7 +4,7 @@ import axios from 'axios'
 import db from '@/lib/db'
 
 const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY
-// const PAYSTACK_PUBLIC_KEY = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY
+
 const PAYSTACK_BASE_URL = 'https://api.paystack.co'
 
 const planCodeMap = {
